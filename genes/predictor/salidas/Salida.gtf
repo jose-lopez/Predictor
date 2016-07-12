@@ -1,0 +1,7 @@
+##gff-version	3
+##sequence-region	21	1	10000
+
+
+21	PredictorILP	gene	1	16980	.	+	.	ID=ENSG00000160214,Name=ENSG00000160214
+21	PredictorILP	transcript	6446	6575	.	+	.	ID=CDSILP.000,Name=CDSILP.000,Parent=ENSG00000160214
+21	PredictorILP	CDS	6446	6577	.	+	0	ID=CDSILP00000,Name=CDSILP00000,Parent=CDSILP.000

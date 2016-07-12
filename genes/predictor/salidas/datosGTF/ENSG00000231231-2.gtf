@@ -1,0 +1,53 @@
+##gff-version 3
+##sequence-region 21 1 46709983
+
+21	PredictorILP	gene 	1	9786	.	-	.	ID=ilpgene0002;Name=ilpgene0002;Alias=ENSG00000231231
+21	PredictorILP	transcript	838	2578	.	-	.	ID=mRNA0006;Parent=ilpgene0002
+21	PredictorILP	transcript	838	2578	.	-	.	ID=mRNA0007;Parent=ilpgene0002
+21	PredictorILP	transcript	838	2578	.	-	.	ID=mRNA0008;Parent=ilpgene0002
+21	PredictorILP	transcript	838	2578	.	-	.	ID=mRNA0009;Parent=ilpgene0002
+21	PredictorILP	transcript	923	2578	.	-	.	ID=mRNA00010;Parent=ilpgene0002
+21	PredictorILP	exon	838	1358	.	-	.	Name=exon0009;Parent=mRNA0006;mRNA0007;mRNA0008;mRNA0009
+21	PredictorILP	exon	1997	2578	.	-	.	Name=exon00010;Parent=mRNA0006
+21	PredictorILP	exon	2022	2578	.	-	.	Name=exon00011;Parent=mRNA0007
+21	PredictorILP	exon	2038	2578	.	-	.	Name=exon00012;Parent=mRNA0008;mRNA00010
+21	PredictorILP	exon	2053	2578	.	-	.	Name=exon00013;Parent=mRNA0009
+21	PredictorILP	exon	923	1521	.	-	.	Name=exon00014;Parent=mRNA00010
+
+
+
+
+
+
+
+
+Lectura #1
+[838,1358],[1997,2578]
+Lectura #2
+[838,1358],[2022,2578]
+Lectura #3
+[838,1358],[2038,2578]
+Lectura #4
+[838,1358],[2053,2578]
+Lectura #5
+[923,1521],[2038,2578]
+Lectura #6
+----------------------------------------------------
+----------------------------------------------------
+[923,1521],[2053,2578]
+Lectura #7
+----------------------------------------------------
+----------------------------------------------------
+[923,1521],[2517,3111]
+Lectura #8
+----------------------------------------------------
+----------------------------------------------------
+[1397,1900],[2517,3111]
+Lectura #9
+----------------------------------------------------
+----------------------------------------------------
+[1397,1900],[2530,3111]
+Lectura #10
+----------------------------------------------------
+----------------------------------------------------
+[1397,1900],[2532,3111]

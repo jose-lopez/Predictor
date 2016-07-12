@@ -1,0 +1,29 @@
+##gff-version 3
+##sequence-region 21 1 46709983
+
+21	PredictorILP	gene 	1	4074	.	-	.	ID=ilpgene0001;Name=ilpgene0001;Alias=ENSG00000223608
+21	PredictorILP	transcript	715	3783	.	-	.	ID=mRNA0001;Parent=ilpgene0001
+21	PredictorILP	transcript	715	3783	.	-	.	ID=mRNA0002;Parent=ilpgene0001
+21	PredictorILP	transcript	912	3783	.	-	.	ID=mRNA0003;Parent=ilpgene0001
+21	PredictorILP	transcript	912	3783	.	-	.	ID=mRNA0004;Parent=ilpgene0001
+21	PredictorILP	transcript	1147	4151	.	-	.	ID=mRNA0005;Parent=ilpgene0001
+21	PredictorILP	exon	715	1225	.	-	.	Name=exon0001;Parent=mRNA0001;mRNA0002
+21	PredictorILP	exon	2121	2713	.	-	.	Name=exon0002;Parent=mRNA0001;mRNA0003
+21	PredictorILP	exon	3220	3783	.	-	.	Name=exon0003;Parent=mRNA0001;mRNA0002;mRNA0003;mRNA0004
+21	PredictorILP	exon	2195	2713	.	-	.	Name=exon0004;Parent=mRNA0002;mRNA0004
+21	PredictorILP	exon	912	1415	.	-	.	Name=exon0005;Parent=mRNA0003;mRNA0004
+21	PredictorILP	exon	1147	1731	.	-	.	Name=exon0006;Parent=mRNA0005
+21	PredictorILP	exon	2476	3038	.	-	.	Name=exon0007;Parent=mRNA0005
+21	PredictorILP	exon	3583	4151	.	-	.	Name=exon0008;Parent=mRNA0005
+21	PredictorILP	gene 	1	9786	.	-	.	ID=ilpgene0002;Name=ilpgene0002;Alias=ENSG00000231231
+21	PredictorILP	transcript	838	2578	.	-	.	ID=mRNA0006;Parent=ilpgene0002
+21	PredictorILP	transcript	838	2578	.	-	.	ID=mRNA0007;Parent=ilpgene0002
+21	PredictorILP	transcript	838	2578	.	-	.	ID=mRNA0008;Parent=ilpgene0002
+21	PredictorILP	transcript	838	2578	.	-	.	ID=mRNA0009;Parent=ilpgene0002
+21	PredictorILP	transcript	923	2578	.	-	.	ID=mRNA00010;Parent=ilpgene0002
+21	PredictorILP	exon	838	1358	.	-	.	Name=exon0009;Parent=mRNA0006;mRNA0007;mRNA0008;mRNA0009
+21	PredictorILP	exon	1997	2578	.	-	.	Name=exon00010;Parent=mRNA0006
+21	PredictorILP	exon	2022	2578	.	-	.	Name=exon00011;Parent=mRNA0007
+21	PredictorILP	exon	2038	2578	.	-	.	Name=exon00012;Parent=mRNA0008;mRNA00010
+21	PredictorILP	exon	2053	2578	.	-	.	Name=exon00013;Parent=mRNA0009
+21	PredictorILP	exon	923	1521	.	-	.	Name=exon00014;Parent=mRNA00010

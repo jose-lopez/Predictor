@@ -1,0 +1,13 @@
+HSF1;heat shock transcription factor 1;HSF1;HSTF1
+HSF2;heat shock transcription factor 2;HSF2
+SRY;sex determining region Y;SRY;TDF
+CDXA
+TST1;coiled-coil domain containing 6;CCDC6;TST1;D10S170;DNA segment on chromosome 10 (unique) 170;PTC;TPC;H4
+MZF1;myeloid zinc finger 1;MZF1;ZNF42;zinc finger protein 42 (myeloid-specific retinoic acid-responsive);ZSCAN6;MZF1B;MZF-1;Zfp98
+AP2;AP2 associated kinase 1;AAK1;KIAA1048;DKFZp686K16132
+LYF1
+GATA1;GATA binding protein 1;GATA1;GF1;GATA-binding protein 1 (globin transcription factor 1);globin transcription factor 1;ERYF1;NFE1;GATA-1;NF-E1
+GATA2;GATA binding protein 2;GATA2;GATA-binding protein 2;NFE1B
+GATA3;GATA binding protein 3;GATA3;GATA-binding protein 3;HDR
+CEBP;CCAAT/enhancer binding protein alpha;CEBPA;CEBP;CCAAT/enhancer binding protein (C/EBP), alpha;C/EBP-alpha
+CAP;CAP, adenylate cyclase-associated protein 1 (yeast);CAP1;CAP
