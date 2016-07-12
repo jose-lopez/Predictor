@@ -51,6 +51,8 @@ public class GenInformation {
 
     private int[] globIDs = {0, 0};
     private boolean ATG;
+    
+    // Probando probando
 
     public int[] getGlobIDs() {
         return globIDs;
