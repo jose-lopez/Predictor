@@ -38,6 +38,10 @@ public class Exon extends GenePart {
     public Exon(Information start, Information end, List<Information> innerInfo) {
         super(start, end, innerInfo);
     }
+    
+    public Exon(Information start, Information end) {
+        super(start, end);
+    }
 
     //---------------------------------------
     //  </editor-fold>
@@ -59,7 +63,7 @@ public class Exon extends GenePart {
     
     //---------------------------------------
     Information getLastInfToGene(){
-        int last = this.innerInfo.size() - 2;
+        int last = this.innerInfo.size() - 1;
         return this.innerInfo.get(last);
     }
     

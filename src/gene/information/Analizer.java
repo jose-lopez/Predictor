@@ -23,6 +23,7 @@
 package gene.information;
 
 import Libreria.Utilities;
+import Restricciones.Restricciones;
 import gene.feature.Exon;
 import gene.feature.Gene;
 import gene.feature.Information;
@@ -90,8 +91,8 @@ public class Analizer {
      * Metodo usado para instanciar el GeneConstructor a traves del constructor
      * que recibe por parametros el Middle
      */
-    public void readFromMiddleWare(MiddleWare middleWare) throws Exception {
-        this.constructor = new GeneConstructor(middleWare);
+    public void readFromMiddleWare(MiddleWare middleWare, boolean ilpClasificador, List<String> data, String rutaSecuencia, String secuencia) throws Exception {
+        this.constructor = new GeneConstructor(middleWare, ilpClasificador, data , rutaSecuencia, secuencia);
     }
 
     //---------------------------------------
@@ -159,6 +160,60 @@ public class Analizer {
             throw new Exception("La secuencia que se intenta analizar no contiene suficientes coordenadas");
         }
     }
+    
+    //---------------------------------------
+    /**
+     * Metodo usado para la construccion de lecturas, al llamar este metodo, se
+     * analizaran las listas del GeneConstructor y se llenara la lista de
+     * genes(lectures) con todas las lecturas validas, este metodo recibe un
+     * boolean que indica si las combinaciones se haran usando un metodo
+     * recursivo (true) o iterativo (false)
+     */
+    public void constructLectures(boolean recursively) throws Exception {
+        if (constructor.isCompatibleGene()) {
+            int last = constructor.lastData();
+
+            if ((constructor.getGt().isEmpty() || constructor.getAg().isEmpty())) {
+                //Caso especial cuando el gen completo es un solo exon
+                if (last >= Model.minExon && last <= Model.maxExon) {
+                    // Information start = constructor.getData(0);
+                    //  Information end = constructor.getData(last);
+
+                    Information start = constructor.getData(0);
+                    Information end = constructor.getData(last);
+
+                    Gene gene = new Gene(start, end);
+                    gene.addExon(new Exon(start, end));
+
+                    this.lectures.add(gene);
+                } else {
+                    throw new Exception("El gen que se intenta analizar es incompatible");
+                }
+            } else {
+                //en este punto, las 4 listas estan llenas y debo hacer las iteraciones
+                Gene possibilities = getPosibilities();
+
+                if (!possibilities.getIntrons().isEmpty()) {
+                    ArrayDeque<ArrayDeque<Intron>> mixedIntrons;
+
+                    if (recursively) {
+                        mixedIntrons = this.recursivelyMix(possibilities);
+                    } else {
+                        mixedIntrons = this.iterativeMix(possibilities);
+                    }
+
+                    this.generateLectures(mixedIntrons);
+                } else {
+                    throw new Exception("El gen que se intenta analizar es incompatible");
+                }
+            }
+        } else {
+            throw new Exception("El gen que se intenta analizar es incompatible");
+        }
+
+        // Se ajustan las coordenadas para efectos de reporte.
+    }
+
 
     /**
      * Metodo usado para la construccion de lecturas, al llamar este metodo, se
@@ -167,6 +222,8 @@ public class Analizer {
      * boolean que indica si las combinaciones se haran usando un metodo
      * recursivo (true) o iterativo (false)
      */
+    
+    /*
     public void constructLectures(boolean recursively) throws Exception {
         if (constructor.isCompatibleGene()) {
 
@@ -193,6 +250,7 @@ public class Analizer {
 
                             Gene gene = new Gene(start, end);
                             gene.addExon(new Exon(start, end, constructor.getInnerInfo((start.position + 1), end.position)));
+                            //gene.getExon(0).getData();
                             //String geneS = gene.toString();
 
                             int LongCuadratura = end.position - start.position + 1;
@@ -238,6 +296,7 @@ public class Analizer {
             }
         }
     }
+    //*/
 
     /**
      * Metodo usado para la construccion de Regiones 5' para transcrito en
@@ -2511,16 +2570,16 @@ public class Analizer {
 
         for (Integer iniIntron : constructor.getGt()) {
             for (Integer finIntron : constructor.getAg()) {
-                finIntron = finIntron + 1;
+                //finIntron = finIntron + 1;
 
                 if (iniIntron < finIntron) {
-                    int d = finIntron - iniIntron;
+                    int d = finIntron + 1 - iniIntron;
 
                     if (d > Model.minIntron && d < Model.maxIntron) {
                         start = constructor.getData(iniIntron);
                         end = constructor.getData(finIntron);
 
-                        posibilities.addIntron(new Intron(start, end, constructor.getInnerInfo(iniIntron + 1, finIntron)));
+                        posibilities.addIntron(new Intron(start, end));
                     }
                 }
             }
@@ -2537,6 +2596,7 @@ public class Analizer {
      * propiedades
      */
     private ArrayDeque<ArrayDeque<Intron>> iterativeMix(Gene possibilities) {
+        
         ArrayDeque<ArrayDeque<Intron>> mixedIntrons = new ArrayDeque<>();
 
         ArrayDeque<Intron> introns = new ArrayDeque<>(possibilities.getIntrons());
@@ -2549,7 +2609,14 @@ public class Analizer {
 
             while (!iteratorQueue.isEmpty()) {
                 Intron pos = iteratorQueue.pollFirst();
-
+                
+                int posS, possS, posE, possE;
+                
+                posS = pos.getStart().position;
+                possS= possibleMix.peekLast().getStart().position;
+                posE = pos.getEnd().position;
+                possE = possibleMix.peekLast().getEnd().position;
+                
                 if (pos.getStart().position > possibleMix.peekLast().getStart().position
                         && pos.getEnd().position > possibleMix.peekLast().getEnd().position) {
 
@@ -2622,6 +2689,87 @@ public class Analizer {
         }
         return mixed;
     }
+    
+    //---------------------------------------
+    /**
+     * Metodo que mezcla todas las combinaciones con los inicios y paradas
+     * validas para que sea un gen y los agrega a la lista de genes(lectures) el
+     * parametro "mixedIntrons" deberia ser la salida de alguno de los metodos
+     * de combinacion (recursivelyMix, iterativeMix) para mayor efectividad
+     */
+    private void generateLectures(ArrayDeque<ArrayDeque<Intron>> mixedIntrons) throws Exception {
+        while (!mixedIntrons.isEmpty()) {
+            ArrayDeque<Intron> introns = mixedIntrons.poll();
+            boolean shouldCheck = !(constructor.isWithoutStarts() || constructor.isWithoutStops());
+
+            for (Integer start : constructor.getAtg()) {
+                int d = introns.peekFirst().getStart().position - start;
+
+                if (d >= Model.minExon && d <= Model.maxExon) {
+                    for (Integer end : constructor.getStops()) {
+                        d = (end + 1) - introns.peekLast().getEnd().position;
+
+                        if (d >= Model.minExon && d <= Model.maxExon) {
+                            //  List<Information> geneData = constructor.getGeneData();
+                            
+                            Information starE = constructor.getData(start);
+                            Information finE = constructor.getData(end);
+
+                            Gene lecture = new Gene(starE, finE);
+
+                            boolean pass = true;
+                            ArrayDeque<Intron> aux = introns.clone();
+                            ArrayDeque<Intron> aux2 = introns.clone();
+                            for (int i = 0; i < introns.size(); i++) {
+                                if (!Restricciones.checkSizeIntron(aux.poll().getStart().position, aux2.poll().getEnd().position)) {
+                                    pass = false;
+                                }
+                            }
+                            if (pass) {
+                                lecture.setIntrons(new ArrayList<>(introns));
+                                lecture.inferExons(constructor);
+
+                                int exonsLength = 0, inicio, fin;
+
+                                for (int i = 0; i < lecture.getExons().size(); i++) {
+
+                                    inicio = lecture.getExon(i).getStart().position;
+                                    fin = lecture.getExon(i).getEnd().position;
+                                    exonsLength = exonsLength + (fin - inicio + 1);
+
+                                    if (!Restricciones.checkSizeExon(inicio, fin)) {
+                                        pass = false;
+                                        break;
+                                    } else {
+                                        if (i == (lecture.getExons().size() - 1)) {
+                                            if (!Restricciones.checkLength(exonsLength)) {
+                                                pass = false;
+                                            }
+                                        }
+                                    }
+
+                                }
+                                if (pass) {
+
+                                    if (!Restricciones.checkStops(lecture.getExons(), end)) { // no paradas intermedias?
+                                        pass = false;
+                                    }
+                                }
+                                if (pass) {
+                                    Restricciones.addInnerInfo(lecture.getExons(), lecture.getIntrons(), constructor);
+                                    //lecture.setStartPos(start-1); lecture.setEndPos(end-1);
+                                    this.lectures.add(lecture);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    
+    //*
 
     //---------------------------------------
     /**
@@ -2630,7 +2778,11 @@ public class Analizer {
      * genes(lectures). El parametro "mixedIntrons" es la salida de alguno de
      * los metodos de combinacion (recursivelyMix, iterativeMix) para mayor
      * efectividad.
+     * 
+     * 
      */
+    
+    /*
     private void generateLectures(ArrayDeque<ArrayDeque<Intron>> mixedIntrons) throws Exception {
         while (!mixedIntrons.isEmpty()) {
             ArrayDeque<Intron> introns = mixedIntrons.poll();
@@ -2661,6 +2813,8 @@ public class Analizer {
         }
 
     }
+    
+    /*/
 
     public void lectsToString() {
         String out; //constructor.toString();
@@ -2816,7 +2970,7 @@ public class Analizer {
                 utr3pdefined = false;
             }
 
-            String gen_ID = genID + "-gen-comparable-" + cont_lects;
+            String gen_ID = genID + "-gen-" + cont_lects;
 
             String transFactFileID = gen_ID + ".tf";
             File transFTfileID = new File(transFactFileID);
@@ -3294,7 +3448,7 @@ public class Analizer {
         List<Gene> utr5ps = gene.getUtr5ps();
 
         int coordenadaInicialGenGTF = definirCoordenadaGlobalUTR5p(utr5ps);
-        int coordenadaFinalGenGTF = gene.getEnd().position + 2;
+        int coordenadaFinalGenGTF = gene.getEnd().position;
 
         if (hebra.equals("+")) {
             metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tgene\t" + (coordenadaInicialGenGTF + referenciaGlobalCoords + 1) + "\t" + (coordenadaFinalGenGTF + referenciaGlobalCoords + 1) + "\t.\t" + metaData.get_hebra() + "\t.\tID=" + gen_ID + ";Name=" + gen_ID, salidaGTF);
@@ -3326,8 +3480,8 @@ public class Analizer {
 
             List<Motivo> corePromoter = utr5p.getPromoter();
             // Se reporta el UTR5p del transcrito en curso.
-            int posIniUTR5p = utr5p.getStart().position;
-            int posFinUTR5p = utr5p.getEnd().position + 2;
+            int posIniUTR5p = utr5p.getStart().position; 
+            int posFinUTR5p = utr5p.getEnd().position + 1; // !!!!!! OJO que pasa que se requiere sumar 1????
             String utr5pID = mRNA_ID + "-UTR5p-" + String.valueOf(contador_UTR5ps);
 
             if (hebra.equals("+")) {
@@ -3363,7 +3517,7 @@ public class Analizer {
                 posicionFinExon = cds.getEnd().position;
 
                 //longExon = posicionFinExon - posicionIniExon + 1;
-                longExon = cds.getInnerInfo().size() + 2;
+                longExon = cds.getInnerInfo().size();
 
                 if (cantCDSs == 1) {
                     cuadratura = 0;
@@ -3421,9 +3575,9 @@ public class Analizer {
             }
             String transFactFileID = utr5pFileAbtsID + ".tf";
             File transFTfileID = new File(transFactFileID);
-            // Se mina el archivos de abstracts que describe los eventos de regulacion inherentes al UTR5p en proceso.
+            // Se mina el archivo de abstracts que describe los eventos de regulacion inherentes al UTR5p en proceso.
             this.listUTR5pHeader(metaData, gene, utr5p, gene.getStart().position, utr5pFileAbtsID, "5p", transFTfileID);
-            this.constructORFListAbts(metaData, genInformation, utr5p, gene, utr5pFileAbtsID, numObjs, numIter);
+            //this.constructORFListAbts(metaData, genInformation, utr5p, gene, utr5pFileAbtsID, numObjs, numIter);
         }
 
         ref_mRNAs = ref_mRNAs + ++contador_UTR5ps;
@@ -3441,7 +3595,7 @@ public class Analizer {
 
         // Se imprime cabecera de la lectura o mRNA.
         coordIniTrans = gene.getStart().position;
-        coordFinTrans = gene.getEnd().position + 2;
+        coordFinTrans = gene.getEnd().position;
 
         if (hebra.equals("+")) {
             metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tgene\t" + (coordIniTrans + referenciaGlobalCoords + 1) + "\t" + (coordFinTrans + referenciaGlobalCoords + 1) + "\t.\t" + metaData.get_hebra() + "\t.\tID=" + gen_ID + ";Name=" + gen_ID, salidaGTF);
@@ -3466,7 +3620,7 @@ public class Analizer {
             posicionFinExon = cds.getEnd().position;
 
             //longExon = posicionFinExon - posicionIniExon + 1;
-            longExon = cds.getInnerInfo().size() + 2;
+            longExon = cds.getInnerInfo().size();
             if (numeCDSs == 0) {
                 cuadratura = 0;
             } else {

@@ -24,6 +24,7 @@ package gene.feature;
 
 import static gene.feature.Gene.endPattern;
 import static gene.feature.Gene.startPattern;
+import gene.information.GeneConstructor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -262,6 +263,32 @@ public class Gene extends GenePart {
 
         return (exonsFine);
 
+    }
+    
+    //---------------------------------------
+    /**
+     * Metodo para INFERIR los exones de un gen a partir de sus intrones ya
+     * definidos donde la lista de informacion interna que recibe por parametros
+     * es usada para definir la informacion que posee cada exon
+     */
+   
+    
+    public void inferExons(GeneConstructor constructor) {
+        
+        Information startPos = this.start, endPos;       
+
+        for (Intron intron : introns) {
+            endPos = constructor.getData(intron.start.position - 1);
+    
+            this.addExon(new Exon(startPos, endPos)); // Restar uno, no sumar.
+            startPos = constructor.getData(intron.end.position + 1);
+            //startInf = innerInfo.get(startPos);
+        }
+
+        endPos = this.end;
+   //     endInf = this.end;
+
+        this.addExon(new Exon(startPos, endPos));
     }
 
     public boolean exonsCheck(boolean isWithStops) {
@@ -609,7 +636,9 @@ public class Gene extends GenePart {
     //---------------------------------------
     @Override
     public Information getEnd() {
-        return this.exons.get(exons.size() - 1).getLastInfToGene();
+        Information posF = this.exons.get(exons.size() - 1).getLastInfToGene();
+        
+        return posF;
     }
 
     //---------------------------------------

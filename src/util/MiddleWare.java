@@ -1,29 +1,29 @@
 /*
-    MiddleWare.java
-    Basicamente encargado de: Invocar a prolog Y usando p_genes, gen_prueba y
-    soportes_p_intrones obtener los resultados con el metodo
-    {Query}.oneSolution.get("{Nombre de la variable}")
-    Copyright (C) 2016 
+ MiddleWare.java
+ Basicamente encargado de: Invocar a prolog Y usando p_genes, gen_prueba y
+ soportes_p_intrones obtener los resultados con el metodo
+ {Query}.oneSolution.get("{Nombre de la variable}")
+ Copyright (C) 2016 
     
-    Morales Yonathan (yonathan.morales@unet.edu.ve), Jose Lopez (jlopez@unet.edu.ve).
+ Morales Yonathan (yonathan.morales@unet.edu.ve), Jose Lopez (jlopez@unet.edu.ve).
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as
+ published by the Free Software Foundation, either version 3 of the
+ License, or (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
 
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>
+ You should have received a copy of the GNU Affero General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-    */
-
+ */
 package util;
 
+import clasificador.Clasificador;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -63,6 +63,18 @@ public class MiddleWare {
 
     //---------------------------Public Methods--------------------------------- 
     // <editor-fold defaultstate="collapsed" desc="Public Methods">
+    /**
+     * Define el caso en el cual el objeto MiddleWare usara un clasificador
+     * desde Weka para asignar listas de sitios GT y AG. Por lo pronto las
+     * coordenadas ATG y Paradas se inicializaran a lista de enteros vacia pues
+     * aun no hay modelos. Este constructor recibira los parametros necesarios
+     * para construir un clasificador. Debe agregarse un objeto clasificador
+     * como atributo de esta clase, a fin de que este disponible para su uso en
+     * el objeto MiddleWare.
+     */
+    public void MiddleWare() {
+    }
+
     /**
      * Define el archivo matriz -> p_genes.pl Y busca
      */
@@ -242,7 +254,18 @@ public class MiddleWare {
 
         return coordsPoliAs;
 
+    }
 
+    /**
+     * Define el listado de sitios de parada usando clasificador. Aunno hay
+     * clasificador por lo que se devuelve vacia esa lista.
+     */
+    public List<Integer> getParadasPositionsClasificador(List<String> data, Integer lastAG) {
+        //Obteniendo los valores...
+
+        List<Integer> coordsParadas = new ArrayList<>();
+
+        return coordsParadas;
 
     }
 
@@ -337,6 +360,88 @@ public class MiddleWare {
         return positions;
     }
 
+    /**
+     * Define el listado de sitios de inicio (ATG) usando clasificador. Aun no
+     * hay clasificador por lo que se devuelve vacia esa lista.
+     */
+    public List<Integer> getATGsPositionsClasificador(String secuencia, String patron) {
+        //Obteniendo los valores...
+
+        Pattern p = Pattern.compile(patron);
+        Matcher m = p.matcher(secuencia);
+
+        List<Integer> coordsATGs = new ArrayList<>();
+
+        int atgActual = 0;
+
+        while (m.find()) {
+
+            coordsATGs.add(atgActual, m.start());
+            atgActual++;
+        }
+
+        return coordsATGs;
+
+    }
+
+    /**
+     * Define el listado de sitios de inicio (ATG) usando clasificador. Aun no
+     * hay clasificador por lo que se devuelve vacia esa lista.
+     */
+    public List<Integer> getPositionsPatron(String secuencia, boolean sitio) {
+        //Obteniendo los valores...
+
+        String[] consensosATG = {"atg"};
+       
+        String[] consensosSTOPS = {"taa","tga","tag"};
+
+
+        String[] consensos = {};
+
+        if (sitio) {
+            consensos = consensosATG;
+        }
+
+        if (!sitio) {
+            consensos = consensosSTOPS;
+        }
+        
+        int coordActual = 0;
+
+        List<Integer> coords = new ArrayList<>();
+
+        for (String consenso : consensos) {
+
+            Pattern p = Pattern.compile(consenso);
+            Matcher m = p.matcher(secuencia);           
+
+            while (m.find()) {
+
+                coords.add(coordActual, m.start());
+                coordActual++;
+            }
+
+        }
+
+        int coordAct, contCoord = 0;
+
+        if (!sitio) {
+
+            for (Integer coord : coords) {
+
+                coordAct = coord.intValue() + 2;
+
+                coords.set(contCoord, coordAct);
+                
+                contCoord++;
+
+            }
+        }
+
+        return coords;
+
+    }
+
     //---------------------------------------
     public List<Integer> getAtgPositions() {
 
@@ -376,6 +481,22 @@ public class MiddleWare {
     }
 
     //---------------------------------------
+    /**
+     * Define el listado de sitios de GT usando clasificador Weka
+     */
+    public List<Integer> getGtPositionsClasificador(int sitio, int modelo, String rutaSecuencia) throws Exception {
+
+        Clasificador clasificador = new Clasificador(sitio, modelo, rutaSecuencia);
+
+        List<Integer> coordsGTs = clasificador.clasificador();
+
+        return coordsGTs;
+    }
+
+    //---------------------------------------
+    /**
+     * Define el listado de sitios de GT usando predictor ILP.
+     */
     public List<Integer> getGtPositions() {
 
         Variable G = new Variable("G");
@@ -415,6 +536,23 @@ public class MiddleWare {
     }
 
     //---------------------------------------
+    /**
+     * Define el listado de sitios de GT usando clasificador Weka
+     */
+    public List<Integer> getAGPositionsClasificador(int sitio, int modelo, String rutaSecuencia) throws Exception {
+
+        Clasificador clasificador = new Clasificador(sitio, modelo, rutaSecuencia);
+
+        List<Integer> coordsAGs = new Clasificador(sitio, modelo, rutaSecuencia).clasificador();
+
+        return coordsAGs;
+    }
+
+    //---------------------------------------
+    //---------------------------------------
+    /**
+     * Define el listado de sitios de GT usando predictor ILP.
+     */
     public List<Integer> getAgPositions() {
 
         Variable G = new Variable("G");

@@ -51,15 +51,22 @@ public class Intron extends GenePart {
     public Intron(Information start, Information end, List<Information> innerInfo) throws Exception {
         super(start, end, innerInfo);
 
-        endStart = innerInfo.size() - 1;
+        endStart = innerInfo.size() - 2;
 
-        String gt = start.info + innerInfo.get(0);
+        String gt = start.info + innerInfo.get(1);
         String ag = innerInfo.get(endStart).info + end.info;
 
         if (!startPattern.matcher(gt).find() || !endPattern.matcher(ag).find()) {
             throw new Exception("El intron " + getPositionsInfo(true) + "[" + gt + ":" + ag + "] no es reconocido, DEBE tener la siguiente ESTRUCTURA [" + Model.GT + ":" + Model.AG + "]");
         }
+        
+        
     }
+    
+    public Intron(Information start, Information end) throws Exception {
+        super(start, end);
+    }
+    
 
     //---------------------------------------
     //  </editor-fold>
@@ -86,10 +93,10 @@ public class Intron extends GenePart {
     }
 
     //---------------------------------------
-    @Override
+    /*@Override
     public Information getEnd() {
         return this.innerInfo.get(endStart);
-    }
+    }*/
     
     //  </editor-fold>
 }

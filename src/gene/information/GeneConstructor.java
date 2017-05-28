@@ -1,27 +1,26 @@
  /*
-    GeneConstructor.java
-    Clase para manegar la construccion de genes(lecturas) posibles usando las
-    listas de inicios(atg), paradas(stops), y intrones (gt,ag) como indices
-    referentes a sus valores en la lista de informacion(geneData)
+ GeneConstructor.java
+ Clase para manegar la construccion de genes(lecturas) posibles usando las
+ listas de inicios(atg), paradas(stops), y intrones (gt,ag) como indices
+ referentes a sus valores en la lista de informacion(geneData)
 
-    Copyright (C) 2016. 
-    Morales Yonathan (yonathan.morales@unet.edu.ve), Jose Lopez (jlopez@unet.edu.ve).
+ Copyright (C) 2016. 
+ Morales Yonathan (yonathan.morales@unet.edu.ve), Jose Lopez (jlopez@unet.edu.ve).
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as
+ published by the Free Software Foundation, either version 3 of the
+ License, or (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
 
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>
+ You should have received a copy of the GNU Affero General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-*/
-
+ */
 package gene.information;
 
 import gene.feature.Information;
@@ -39,7 +38,6 @@ public class GeneConstructor {
     //---------------------------Private Attributes-----------------------------
     // <editor-fold desc="Private Attributes">
 //---------- listas de inicio, como indices referentes a la informacion que se encuentra en gendata---------------------------------
-  
 
     private List<Integer> atg;
     private List<Integer> gt;
@@ -50,7 +48,7 @@ public class GeneConstructor {
     //---------------------------------------
     private boolean withoutStarts = false;
     private boolean withoutStops = false;
-       //  </editor-fold>    
+    //  </editor-fold>    
     //---------------------------Setters---------------------------------------- 
     // <editor-fold defaultstate="collapsed" desc="Setters">
 
@@ -81,11 +79,10 @@ public class GeneConstructor {
     public void setWithoutStops(boolean withoutStops) {
         this.withoutStops = withoutStops;
     }
-    
+
     //  </editor-fold>
     //---------------------------Constructors-----------------------------------
     // <editor-fold defaultstate="collapsed" desc="Constructors">
-
     /**
      * Constructor usado para crear el objeto con las listas ya llenas de
      * acuerdo a los valores que llegan por parametros
@@ -107,12 +104,24 @@ public class GeneConstructor {
      * obtendran los valores que este devuelve como entrada para generar las
      * listas internas
      */
-    public GeneConstructor(MiddleWare middleWare) throws Exception {
-        this.initLists(middleWare.getAtgPositions(),
-                middleWare.getGtPositions(),
-                middleWare.getAgPositions(),
-                middleWare.getParadasPositions(),
-                middleWare.getGenData());
+    public GeneConstructor(MiddleWare middleWare, boolean ilpClasificador, List<String> data , String rutaSecuencia,String secuencia) throws Exception {
+
+        if (ilpClasificador) {
+            this.initLists(middleWare.getAtgPositions(),
+                    middleWare.getGtPositions(),
+                    middleWare.getAgPositions(),
+                    middleWare.getParadasPositions(),
+                    middleWare.getGenData());
+        }else{
+            
+            
+            List<Integer> gts =  middleWare.getGtPositionsClasificador(0, 1, rutaSecuencia);
+            List<Integer> ags =  middleWare.getAGPositionsClasificador(1, 1, rutaSecuencia);
+            List<Integer> atgs = middleWare.getPositionsPatron(secuencia, true);
+            List<Integer> stopss = middleWare.getPositionsPatron(secuencia, false);
+            this.initLists(atgs, gts, ags, stopss, middleWare.getGenData());
+            
+        }
 
         this.isCompatibleGene();
     }
@@ -251,16 +260,16 @@ public class GeneConstructor {
 
         boolean reset = false;
         int limitATGs;
-        if (limiteP>200){
+        if (limiteP > 200) {
             limitATGs = limiteP - 200;
-        }else{
-            limitATGs=limiteP;
+        } else {
+            limitATGs = limiteP;
         }
-        
+
         ArrayList<Integer> auxATG = new ArrayList<>();
 
         for (Integer a : this.atg) {
-            
+
             if (!(a < limitATGs)) {
                 auxATG.add(a);
             }
@@ -274,7 +283,7 @@ public class GeneConstructor {
             System.out.println("Sitios de inicio reestructurados segun region promotora en: " + genID);
             reset = true;
         }
-        
+
         return reset;
 
     }
