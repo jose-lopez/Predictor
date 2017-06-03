@@ -2750,14 +2750,13 @@ public class Analizer {
 
                                 }
                                 if (pass) {
-
+                                    
+                                    Restricciones.addInnerInfo(lecture.getExons(), lecture.getIntrons(), constructor);
                                     if (!Restricciones.checkStops(lecture.getExons(), end)) { // no paradas intermedias?
                                         pass = false;
                                     }
                                 }
-                                if (pass) {
-                                    Restricciones.addInnerInfo(lecture.getExons(), lecture.getIntrons(), constructor);
-                                    //lecture.setStartPos(start-1); lecture.setEndPos(end-1);
+                                if (pass) {                                      
                                     this.lectures.add(lecture);
                                 }
                             }
