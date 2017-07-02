@@ -196,7 +196,7 @@ public class GenInformation {
 
     public void generaLects(String entrada, File gff3EnsemblEPDExt, File gff3Predictor, boolean iLPinr, boolean consensos, boolean reporteAbs, int numObjs, int numIter, boolean ilpClasificador) throws IOException, Exception {
 
-        /*
+        //*
         List<Integer> atg = new ArrayList<>(Arrays.asList(2101));
         List<Integer> gt = new ArrayList<>(Arrays.asList(2239));
         List<Integer> ag = new ArrayList<>(Arrays.asList(3114));
@@ -255,9 +255,9 @@ public class GenInformation {
         middle.init("p_genes.pl"); //Se inicializa el objeto predictor con el codigo del predictor.
 
         Analizer analizer = new Analizer();
-        //analizer.readFromLists(atg, gt, ag, stops, data); // Descomentar para trabajar con listas
+        analizer.readFromLists(atg, gt, ag, stops, data); // Descomentar para trabajar con listas
 
-        analizer.readFromMiddleWare(middle, false, data, rutaGenClasificador, secuencia); // Se instancia el objeto constructor de lecturas
+        //analizer.readFromMiddleWare(middle, false, data, rutaGenClasificador, secuencia); // Se instancia el objeto constructor de lecturas
         // empleando las predicciones desde Prolog que estan disponibles en el objeto middle. 
         // Al salir de este metodo las listas de predicciones hechas desde prolog estan disponibles
         // en las listas atg, gt, ... del objeto constructor presente en el objeto analizer.
@@ -294,7 +294,7 @@ public class GenInformation {
 
             //analizer.constructRegionUTR3p(metaDataGen, this, false);
 
-            analizer.lectsToGTF(metaDataGen, gff3Predictor, reporteAbs, this, numObjs, numIter);
+            analizer.lectsToGFF3(metaDataGen, gff3Predictor, reporteAbs, this, numObjs, numIter);
 
             analizer.lectsEnsemblEpd(metaDataGen, gff3EnsemblEPDExt, reporteAbs, this);
 

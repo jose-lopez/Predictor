@@ -1,0 +1,16 @@
+CYP7A1;cytochrome P450 family 7 subfamily A member 1;CYP7;cytochrome P450, subfamily VIIA (cholesterol 7 alpha-monooxygenase), polypeptide 1;cytochrome P450, family 7, subfamily A, polypeptide 1
+EGF;epidermal growth factor;epidermal growth factor (beta-urogastrone)
+EGFR;epidermal growth factor receptor;ERBB;epidermal growth factor receptor (avian erythroblastic leukemia viral (v-erb-b) oncogene homolog);ERBB1
+GRB2;growth factor receptor bound protein 2;growth factor receptor-bound protein 2;NCKAP2
+SOS
+SOS1;SOS Ras/Rac guanine nucleotide exchange factor 1;GINGF;gingival fibromatosis, hereditary, 1;son of sevenless homolog 1 (Drosophila);HGF;GF1
+SOS2;SOS Ras/Rho guanine nucleotide exchange factor 2;son of sevenless (Drosophilia) homolog 2;son of sevenless homolog 2 (Drosophila)
+Ras
+RRAS;related RAS viral (r-ras) oncogene homolog
+RRAS2;related RAS viral (r-ras) oncogene homolog 2;TC21
+Raf
+ARAF;A-Raf proto-oncogene, serine/threonine kinase;ARAF1;v-raf murine sarcoma 3611 viral oncogene homolog 1
+BRAF;B-Raf proto-oncogene, serine/threonine kinase;v-raf murine sarcoma viral oncogene homolog B;BRAF1
+RAF1;Raf-1 proto-oncogene, serine/threonine kinase;v-raf-1 murine leukemia viral oncogene homolog 1;Raf-1;c-Raf;CRAF
+MEK
+LAMTOR3;late endosomal/lysosomal adaptor, MAPK and MTOR activator 3;MAP2K1IP1;MAPKSP1;mitogen-activated protein kinase kinase 1 interacting protein 1;MAPK scaffold protein 1;MP1;MAPBP;Ragulator3

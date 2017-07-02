@@ -1,0 +1,11 @@
+AML1
+RUNX1;runt related transcription factor 1;AML1;CBFA2;acute myeloid leukemia 1;runt-related transcription factor 1;PEBP2A2;AMLCR1
+SRY;sex determining region Y;TDF
+CDXA
+CREB
+CREBBP;CREB binding protein;RSTS;Rubinstein-Taybi syndrome;RTS;CBP;KAT3A
+CREBZF;CREB/ATF bZIP transcription factor;ZF
+CRTC1;CREB regulated transcription coactivator 1;MECT1;mucoepidermoid carcinoma translocated 1;KIAA0616;FLJ14027;TORC1
+CRTC2;CREB regulated transcription coactivator 2;TORC2
+CRTC3;CREB regulated transcription coactivator 3;FLJ21868
+CREBP1CJUN

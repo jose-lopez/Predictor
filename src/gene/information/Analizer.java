@@ -1,25 +1,24 @@
  /*
-    Analizer.java
-    Clase enfocada en el analisis de un objeto GeneConstructor para la formacion
-    de lecturas(genes) validos, que son asociadas a una lista llamada "lectures"
-    Copyright (C) 2016. 
-    Morales Yonathan (yonathan.morales@unet.edu.ve), Jose Lopez (jlopez@unet.edu.ve).
+ Analizer.java
+ Clase enfocada en el analisis de un objeto GeneConstructor para la formacion
+ de lecturas(genes) validos, que son asociadas a una lista llamada "lectures"
+ Copyright (C) 2016. 
+ Morales Yonathan (yonathan.morales@unet.edu.ve), Jose Lopez (jlopez@unet.edu.ve).
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as
+ published by the Free Software Foundation, either version 3 of the
+ License, or (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
 
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>
+ You should have received a copy of the GNU Affero General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-*/
-
+ */
 package gene.information;
 
 import Libreria.Utilities;
@@ -45,9 +44,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import pipeline.BioPattern;
-import pipeline.Factor_Transcripcion;
+//import pipeline.Factor_Transcripcion;
 import pipeline.Motivo;
 import pipeline.Region;
+import pipeline.factorTranscripcion;
 import util.GenInformation;
 import util.MiddleWare;
 
@@ -92,7 +92,7 @@ public class Analizer {
      * que recibe por parametros el Middle
      */
     public void readFromMiddleWare(MiddleWare middleWare, boolean ilpClasificador, List<String> data, String rutaSecuencia, String secuencia) throws Exception {
-        this.constructor = new GeneConstructor(middleWare, ilpClasificador, data , rutaSecuencia, secuencia);
+        this.constructor = new GeneConstructor(middleWare, ilpClasificador, data, rutaSecuencia, secuencia);
     }
 
     //---------------------------------------
@@ -160,7 +160,7 @@ public class Analizer {
             throw new Exception("La secuencia que se intenta analizar no contiene suficientes coordenadas");
         }
     }
-    
+
     //---------------------------------------
     /**
      * Metodo usado para la construccion de lecturas, al llamar este metodo, se
@@ -214,7 +214,6 @@ public class Analizer {
         // Se ajustan las coordenadas para efectos de reporte.
     }
 
-
     /**
      * Metodo usado para la construccion de lecturas, al llamar este metodo, se
      * analizaran las listas del GeneConstructor y se llenara la lista de
@@ -222,82 +221,80 @@ public class Analizer {
      * boolean que indica si las combinaciones se haran usando un metodo
      * recursivo (true) o iterativo (false)
      */
-    
     /*
-    public void constructLectures(boolean recursively) throws Exception {
-        if (constructor.isCompatibleGene()) {
+     public void constructLectures(boolean recursively) throws Exception {
+     if (constructor.isCompatibleGene()) {
 
-            if ((!constructor.getAtg().isEmpty() && !constructor.getStops().isEmpty())) {
+     if ((!constructor.getAtg().isEmpty() && !constructor.getStops().isEmpty())) {
 
-                for (Integer atg : constructor.getAtg()) {
-                    for (Integer stop : constructor.getStops()) {
+     for (Integer atg : constructor.getAtg()) {
+     for (Integer stop : constructor.getStops()) {
 
-                        if ((stop.intValue() - atg.intValue() + 1) > Model.minExon) {
+     if ((stop.intValue() - atg.intValue() + 1) > Model.minExon) {
 
-                            Information start = constructor.getData(atg);
-                            Information end;
-                            String stopS;
-                            String atgS = constructor.getData(atg).toString() + constructor.getData(atg.intValue() + 1).toString() + constructor.getData(atg.intValue() + 2).toString();
-                            if (!(stop.intValue() == constructor.lastData())) {
-                                end = constructor.getData(stop.intValue() + 2);
-                                stopS = constructor.getData(stop).toString() + constructor.getData(stop.intValue() + 1).toString() + constructor.getData(stop.intValue() + 2).toString();
+     Information start = constructor.getData(atg);
+     Information end;
+     String stopS;
+     String atgS = constructor.getData(atg).toString() + constructor.getData(atg.intValue() + 1).toString() + constructor.getData(atg.intValue() + 2).toString();
+     if (!(stop.intValue() == constructor.lastData())) {
+     end = constructor.getData(stop.intValue() + 2);
+     stopS = constructor.getData(stop).toString() + constructor.getData(stop.intValue() + 1).toString() + constructor.getData(stop.intValue() + 2).toString();
 
-                            } else {
-                                end = constructor.getData(constructor.lastData());
-                                stopS = constructor.getData(stop.intValue() - 2).toString() + constructor.getData(stop.intValue() - 1).toString() + constructor.getData(stop).toString();
+     } else {
+     end = constructor.getData(constructor.lastData());
+     stopS = constructor.getData(stop.intValue() - 2).toString() + constructor.getData(stop.intValue() - 1).toString() + constructor.getData(stop).toString();
 
-                            }
+     }
 
-                            Gene gene = new Gene(start, end);
-                            gene.addExon(new Exon(start, end, constructor.getInnerInfo((start.position + 1), end.position)));
-                            //gene.getExon(0).getData();
-                            //String geneS = gene.toString();
+     Gene gene = new Gene(start, end);
+     gene.addExon(new Exon(start, end, constructor.getInnerInfo((start.position + 1), end.position)));
+     //gene.getExon(0).getData();
+     //String geneS = gene.toString();
 
-                            int LongCuadratura = end.position - start.position + 1;
-                            int cuadraturaExon = LongCuadratura % 3;
+     int LongCuadratura = end.position - start.position + 1;
+     int cuadraturaExon = LongCuadratura % 3;
 
-                            if (atgS.equals("atg") && (stopS.equals("taa") || stopS.equals("tag") || stopS.equals("tga"))) {
-                                if ((cuadraturaExon == 0) && gene.exonsTripletCheck()) {
-                                    this.lectures.add(gene);
-                                }
-                            }
-                        }
+     if (atgS.equals("atg") && (stopS.equals("taa") || stopS.equals("tag") || stopS.equals("tga"))) {
+     if ((cuadraturaExon == 0) && gene.exonsTripletCheck()) {
+     this.lectures.add(gene);
+     }
+     }
+     }
 
-                    }
-                }
+     }
+     }
 
-                if ((!constructor.getGt().isEmpty() && !constructor.getAg().isEmpty())) {
-                    //en este punto, las 4 listas estan llenas y debo hacer las iteraciones
-                    Gene possibilities = getPosibilities(); // Se generan todos los intrones posibles y se guardan en un gen temporal.
+     if ((!constructor.getGt().isEmpty() && !constructor.getAg().isEmpty())) {
+     //en este punto, las 4 listas estan llenas y debo hacer las iteraciones
+     Gene possibilities = getPosibilities(); // Se generan todos los intrones posibles y se guardan en un gen temporal.
 
-                    if (!possibilities.getIntrons().isEmpty()) {
-                        ArrayDeque<ArrayDeque<Intron>> mixedIntrons; // Se crea una cola que contendra colas de intrones y cada cola 
-                        // correspondera a una lectura posible expresada como secuencia de intrones..
+     if (!possibilities.getIntrons().isEmpty()) {
+     ArrayDeque<ArrayDeque<Intron>> mixedIntrons; // Se crea una cola que contendra colas de intrones y cada cola 
+     // correspondera a una lectura posible expresada como secuencia de intrones..
 
-                        if (recursively) {
-                            mixedIntrons = this.recursivelyMix(possibilities);
-                        } else {
-                            mixedIntrons = this.iterativeMix(possibilities);
-                        }
+     if (recursively) {
+     mixedIntrons = this.recursivelyMix(possibilities);
+     } else {
+     mixedIntrons = this.iterativeMix(possibilities);
+     }
 
-                        if (!mixedIntrons.isEmpty()) {
-                            this.generateLectures(mixedIntrons);
-                        } else {
-                            System.out.println("La secuencia no contiene Intrones, no hay lecturas que reportar");
-                        }
+     if (!mixedIntrons.isEmpty()) {
+     this.generateLectures(mixedIntrons);
+     } else {
+     System.out.println("La secuencia no contiene Intrones, no hay lecturas que reportar");
+     }
 
-                    } else {
-                        throw new Exception("La secuencia que se intenta analizar no contiene intrones y no es un unico exon");
-                    }
-                }
+     } else {
+     throw new Exception("La secuencia que se intenta analizar no contiene intrones y no es un unico exon");
+     }
+     }
 
-            } else {
-                throw new Exception("La secuencia que se intenta analizar no contiene suficientes coordenadas");
-            }
-        }
-    }
-    //*/
-
+     } else {
+     throw new Exception("La secuencia que se intenta analizar no contiene suficientes coordenadas");
+     }
+     }
+     }
+     //*/
     /**
      * Metodo usado para la construccion de Regiones 5' para transcrito en
      * proceso. Ya se tiene un ORF y se desea completar el transcrito
@@ -340,7 +337,7 @@ public class Analizer {
 
             } else {
                 BioPattern pipeline = new BioPattern(regionAdnUTR5p, regionAdnUTR5p);
-                regionPromotora = pipeline.pipelineBioPatternRP("regionUTR5p.txt", "0.90", 10, 0, 0, true);
+                regionPromotora = pipeline.pipelineBioPatternRP("regionUTR5p.txt", "0.90", 0, 0);
 
             }
 
@@ -353,10 +350,10 @@ public class Analizer {
 
             for (Motivo m : regionPromotora.getPromotor()) {
 
-                for (Factor_Transcripcion ft : m.getFactores()) {
+                for (factorTranscripcion ft : m.getFactores()) {
 
                     for (String fInr : factoresInrDPECorePromoter) {
-                        if (ft.getSimbolo().indexOf(fInr) != -1) {
+                        if (ft.getID().indexOf(fInr) != -1) {
                             posiblesMotivosInrDPE.add(m);
                             break;
                         }
@@ -533,10 +530,10 @@ public class Analizer {
      * proceso. Ya se tiene un ORF y se desea completar el transcrito
      * correspondiente.
      */
-    public Region constructORFListAbts(Utilities metaData, GenInformation genInformation, Gene utr5p, Gene gene, String fileAbstID, int numObjs, int numIter) throws Exception {
+    public Region constructORFListAbts(Utilities metaData, GenInformation genInformation, Gene utr5p, Gene gene, String estructura, String pathEstructura, int numObjs, int numIter) throws Exception {
 
-        //String fileAbID = fileAbstID + ".abst";
-        System.out.println("Definiendo listado de abstracts para transcrito y UTR5p: " + fileAbstID);
+        //String fileAbID = estructura + ".abst";
+        System.out.println("Definiendo listado de FTs para transcrito y UTR5p: " + estructura);
 
         Information inicioUTR5p = utr5p.getStart();
         int iniRegionPromo, finRegionProm;
@@ -569,27 +566,29 @@ public class Analizer {
 
         // Se preparan los datos a pasar al pipeline
         regionPromotoraORF = regionPromotoraORF.toUpperCase();
-        File fileRegionUTR5p = new File("regionProm.txt");
+        String regionUTR5p = pathEstructura + "/"+ estructura + ".rg";
+        File fileRegionUTR5p = new File(regionUTR5p);
         fileRegionUTR5p.delete();
         metaData.guardar(regionPromotoraORF, fileRegionUTR5p);
 
         // Se invoca al pipeline quien devuelve la region con el promotor propuesto para la secuencia problema.
         // El promotor es una coleccion de motivos, cada uno con la coleccion de factores de transcripcion
         // que le reconocen. Alli deben estar los factores que definen un core promoter.
-        BioPattern pipeline = new BioPattern(regionPromotoraORF, regionPromotoraORF);
-        //Region regionPromotora = pipeline.pipelineBioPattern("regionProm.txt", "regionProm.txt", "0.95", 10, numObjs, numIter, fileAbstID + ".txt", true);
-        Region regionPromotora = pipeline.pipelineBioPatternRP("regionProm.txt", "0.95", 10, 0, 0, true);
+        BioPattern pipeline = new BioPattern(regionUTR5p, regionUTR5p);
+        //Region regionPromotora = pipeline.pipelineBioPattern("regionProm.txt", "regionProm.txt", "0.95", 10, numObjs, numIter, estructura + ".txt", true);
+        Region regionPromotora = pipeline.pipelineBioPatternRP(regionUTR5p, "0.99", 0, 0);
 
-        String transFactFileID = fileAbstID + ".tf";
+        String transFactFileID = pathEstructura + "/"+ estructura + ".tf";
 
         File transFTfileID = new File(transFactFileID);
 
-        String listsFacts = fileAbstID + ".pl";
+        String listsFacts = pathEstructura + "/"+ estructura + ".pl";
 
         File listFts = new File(listsFacts);
+        listFts.delete();
 
-        System.out.println("Listado de factores de transcripción para ORF:" + fileAbstID);
-        metaData.guardar("Listado de factores de transcripción para ORF:" + fileAbstID + "\n", transFTfileID);
+        System.out.println("Listado de factores de transcripción para ORF:" + estructura);
+        metaData.guardar("Listado de factores de transcripción para ORF:" + estructura + "\n", transFTfileID);
         System.out.println("Motivo:\t\t\t\tCoords:\t\tFactor Simbolo:\tFactor Name:");
         metaData.guardar("Motivo:\t\t\t\tCoords:\t\tFactor Simbolo:\tFactor Name:\n", transFTfileID);
 
@@ -612,15 +611,15 @@ public class Analizer {
 
         for (Motivo motivo : regionPromotora.getPromotor()) {
 
-            String consenso = motivo.getFactores().get(0).getLectura().getPlantillaMotivo();
+            String consenso = motivo.getFactores().get(0).getLecturasTFBIND().getCadena();
 
             int[] coordsMotivo = motivo.getCoordenadas();
 
-            ArrayList<Factor_Transcripcion> fts = motivo.getFactores();
+            ArrayList<factorTranscripcion> fts = motivo.getFactores();
 
             factorID = fts.get(0).getID();
-            factorName = fts.get(0).getNombre();
-            factorSimb = fts.get(0).getSimbolo();
+            factorName = fts.get(0).getID();
+            factorSimb = fts.get(0).getID();
 
             System.out.println(consenso + "\t\t" + coordsMotivo[0] + "-" + coordsMotivo[1] + "\t\t" + factorSimb + "\t" + factorName);
             metaData.guardar(consenso + "\t\t" + coordsMotivo[0] + "-" + coordsMotivo[1] + "\t\t" + factorSimb + "\t" + factorName, transFTfileID);
@@ -649,7 +648,7 @@ public class Analizer {
             }
         }
 
-        System.out.println("Lista de factores de transcripción para ORF:" + fileAbstID);
+        System.out.println("Lista de factores de transcripción para ORF:" + estructura);
         System.out.println(listaFTstrings);
         metaData.guardar(listaFTstrings, listFts);
 
@@ -703,8 +702,8 @@ public class Analizer {
 
             for (Motivo m : corePromoter) {
                 metaData.guardar(m.getCore() + ": ", transFTfileID);
-                motifFirma = m.getFactores().get(0).getLectura().getCadena();
-                consenso = m.getFactores().get(0).getLectura().getPlantillaMotivo();
+                motifFirma = m.getFactores().get(0).getLecturasTFBIND().getCadena();
+                consenso = m.getFactores().get(0).getLecturasTFBIND().getCadena();
                 metaData.guardar("Motif: " + motifFirma, transFTfileID);
                 metaData.guardar("Coords: " + m.getCoordenadas()[0] + "-" + m.getCoordenadas()[1] + "\n", transFTfileID);
             }
@@ -719,6 +718,8 @@ public class Analizer {
             metaData.guardar(coorATG + "\t" + coorATG + "\t" + "NA" + "\t" + coordsRegionReg[0] + "\t" + coordsRegionReg[1] + "\n", transFTfileID);
 
         }
+        
+        
     }
 
     /**
@@ -759,7 +760,7 @@ public class Analizer {
                 // El promotor es una coleccion de motivos, cada uno con la coleccion de factores de transcripcion
                 // que le reconocen. Alli deben estar los factores que definen un core promoter.
                 BioPattern pipeline = new BioPattern(regionProximalPromoterUTR5p, regionProximalPromoterUTR5p);
-                Region regionPromotora = pipeline.pipelineBioPatternRP("regionProxPromUTR5p.txt", "0.85", 10, 3, 2, true);
+                Region regionPromotora = pipeline.pipelineBioPatternRP("regionProxPromUTR5p.txt", "0.85", 0, 0);
 
             }
         }
@@ -794,7 +795,7 @@ public class Analizer {
             // El promotor es una coleccion de motivos, cada uno con la coleccion de factores de transcripcion
             // que le reconocen. Alli deben estar los factores que definen un core promoter.
             BioPattern pipeline = new BioPattern(regionAdnUTR3p, regionAdnUTR3p);
-            Region regionUTR3p = pipeline.pipelineBioPatternRP("regionUTR3p.txt", "0.99", 10, 0, 0, true);
+            Region regionUTR3p = pipeline.pipelineBioPatternRP("regionUTR3p.txt", "0.99", 0, 0);
 
             // En el array corePromoters estan los promotores que estan del lado izquierdo de la caja TATA y que la 
             // incluyen (cis promoters).
@@ -815,7 +816,7 @@ public class Analizer {
 
             for (Motivo m : regionUTR3p.getPromotor()) {
 
-                for (Factor_Transcripcion ft : m.getFactores()) {
+                for (factorTranscripcion ft : m.getFactores()) {
 
                     for (String fDSE : factoresDSECorePromoter) {
                         if (ft.getID().indexOf(fDSE) != -1) {
@@ -1167,7 +1168,7 @@ public class Analizer {
             if (hasConsense) {
                 posibleInrDPE.setCore("Inr");
             } else {
-                String ftName = posibleInrDPE.getFactores().get(0).getSimbolo();
+                String ftName = posibleInrDPE.getFactores().get(0).getID();
                 if (ftName.indexOf("E2F") != -1) {
                     posibleInrDPE.setCore("E2F-Inr-Like");
                     hasConsense = true;
@@ -1398,9 +1399,9 @@ public class Analizer {
 
         for (Motivo m : regionPromotora.getPromotor()) {
 
-            for (Factor_Transcripcion ft : m.getFactores()) {
+            for (factorTranscripcion ft : m.getFactores()) {
 
-                ftcomp = ft.getSimbolo();
+                ftcomp = ft.getID();
 
                 for (String fTATA : factoresTATACorePromoter) {
                     String mS = m.getMotivo();
@@ -2180,7 +2181,7 @@ public class Analizer {
 
         for (Motivo m : regionUTR3p.getPromotor()) {
 
-            for (Factor_Transcripcion ft : m.getFactores()) {
+            for (factorTranscripcion ft : m.getFactores()) {
 
                 for (String fPolyA_Site : factoresPolyA_Site) {
 
@@ -2596,7 +2597,7 @@ public class Analizer {
      * propiedades
      */
     private ArrayDeque<ArrayDeque<Intron>> iterativeMix(Gene possibilities) {
-        
+
         ArrayDeque<ArrayDeque<Intron>> mixedIntrons = new ArrayDeque<>();
 
         ArrayDeque<Intron> introns = new ArrayDeque<>(possibilities.getIntrons());
@@ -2609,14 +2610,14 @@ public class Analizer {
 
             while (!iteratorQueue.isEmpty()) {
                 Intron pos = iteratorQueue.pollFirst();
-                
+
                 int posS, possS, posE, possE;
-                
+
                 posS = pos.getStart().position;
-                possS= possibleMix.peekLast().getStart().position;
+                possS = possibleMix.peekLast().getStart().position;
                 posE = pos.getEnd().position;
                 possE = possibleMix.peekLast().getEnd().position;
-                
+
                 if (pos.getStart().position > possibleMix.peekLast().getStart().position
                         && pos.getEnd().position > possibleMix.peekLast().getEnd().position) {
 
@@ -2689,7 +2690,7 @@ public class Analizer {
         }
         return mixed;
     }
-    
+
     //---------------------------------------
     /**
      * Metodo que mezcla todas las combinaciones con los inicios y paradas
@@ -2711,7 +2712,7 @@ public class Analizer {
 
                         if (d >= Model.minExon && d <= Model.maxExon) {
                             //  List<Information> geneData = constructor.getGeneData();
-                            
+
                             Information starE = constructor.getData(start);
                             Information finE = constructor.getData(end);
 
@@ -2750,13 +2751,13 @@ public class Analizer {
 
                                 }
                                 if (pass) {
-                                    
+
                                     Restricciones.addInnerInfo(lecture.getExons(), lecture.getIntrons(), constructor);
                                     if (!Restricciones.checkStops(lecture.getExons(), end)) { // no paradas intermedias?
                                         pass = false;
                                     }
                                 }
-                                if (pass) {                                      
+                                if (pass) {
                                     this.lectures.add(lecture);
                                 }
                             }
@@ -2766,10 +2767,8 @@ public class Analizer {
             }
         }
     }
-    
-    
-    //*
 
+    //*
     //---------------------------------------
     /**
      * Metodo que mezcla todas las combinaciones de intrones con los inicios y
@@ -2777,44 +2776,42 @@ public class Analizer {
      * genes(lectures). El parametro "mixedIntrons" es la salida de alguno de
      * los metodos de combinacion (recursivelyMix, iterativeMix) para mayor
      * efectividad.
-     * 
-     * 
+     *
+     *
      */
-    
     /*
-    private void generateLectures(ArrayDeque<ArrayDeque<Intron>> mixedIntrons) throws Exception {
-        while (!mixedIntrons.isEmpty()) {
-            ArrayDeque<Intron> introns = mixedIntrons.poll();
-            boolean shouldCheck = !(constructor.isWithoutStarts() || constructor.isWithoutStops());
+     private void generateLectures(ArrayDeque<ArrayDeque<Intron>> mixedIntrons) throws Exception {
+     while (!mixedIntrons.isEmpty()) {
+     ArrayDeque<Intron> introns = mixedIntrons.poll();
+     boolean shouldCheck = !(constructor.isWithoutStarts() || constructor.isWithoutStops());
 
-            for (Integer start : constructor.getAtg()) {
-                int d = introns.peekFirst().getStart().position - start;
+     for (Integer start : constructor.getAtg()) {
+     int d = introns.peekFirst().getStart().position - start;
 
-                if (d >= Model.minExon && d <= Model.maxExon) {
-                    for (Integer end : constructor.getStops()) {
-                        d = end - introns.peekLast().getEnd().position;
+     if (d >= Model.minExon && d <= Model.maxExon) {
+     for (Integer end : constructor.getStops()) {
+     d = end - introns.peekLast().getEnd().position;
 
-                        if (d >= Model.minExon && d <= Model.maxExon) {
-                            List<Information> geneData = constructor.getGeneData();
+     if (d >= Model.minExon && d <= Model.maxExon) {
+     List<Information> geneData = constructor.getGeneData();
 
-                            Gene lecture = new Gene(constructor.getData(start), constructor.getData(end), shouldCheck, geneData);
+     Gene lecture = new Gene(constructor.getData(start), constructor.getData(end), shouldCheck, geneData);
 
-                            lecture.setIntrons(new ArrayList<>(introns));
-                            if (lecture.inferExons(geneData, !constructor.isWithoutStops(), shouldCheck)) {
-                                this.lectures.add(lecture);
-                            }
+     lecture.setIntrons(new ArrayList<>(introns));
+     if (lecture.inferExons(geneData, !constructor.isWithoutStops(), shouldCheck)) {
+     this.lectures.add(lecture);
+     }
 
-                            //this.lectures.add(lecture);
-                        }
-                    }
-                }
-            }
-        }
+     //this.lectures.add(lecture);
+     }
+     }
+     }
+     }
+     }
 
-    }
+     }
     
-    /*/
-
+     /*/
     public void lectsToString() {
         String out; //constructor.toString();
 
@@ -2924,7 +2921,7 @@ public class Analizer {
         return localIDs;
     }
 
-    public void lectsToGTF(Utilities metaData, File salidaGTF, boolean reporteAbs, GenInformation genInformation, int numObjs, int numIter) throws IOException, Exception {
+    public void lectsToGFF3(Utilities metaData, File salidaGTF, boolean reporteAbs, GenInformation genInformation, int numObjs, int numIter) throws IOException, Exception {
 
         // Se imprime la cabecera del gen en proceso
         String inicioGlobalGen = metaData.get_InicioAbsoluto().toString();
@@ -3087,7 +3084,7 @@ public class Analizer {
                         int posicionIniMotivo = motivo.getCoordenadas()[0];
                         int posicionFinMotivo = motivo.getCoordenadas()[1];
                         String motifID = motivo.getFactores().get(0).getID();
-                        String motifName = motivo.getFactores().get(0).getNombre();
+                        String motifName = motivo.getFactores().get(0).getID();
 
                         if (hebra.equals("+")) {
                             metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tTF_binding_site\t" + (posicionIniMotivo + referenciaGlobalCoords + 1) + "\t" + (posicionFinMotivo + referenciaGlobalCoords + 1) + "\t.\t" + metaData.get_hebra() + "\t" + "." + "\t" + "ID=" + motifID + ";Name=" + motifName + ";Parent=" + gen_ID, salidaGTF);
@@ -3171,7 +3168,7 @@ public class Analizer {
             File transFTfileID = new File(transFactFileID);
             // Se mina el archivos de abstracts que describe los eventos de regulacion inherentes al UTR5p en proceso.
             this.listUTR5pHeader(metaData, gene, utr5p, gene.getStart().position, utr5pFileAbtsID, "5p3p", transFTfileID);
-            this.constructORFListAbts(metaData, genInformation, utr5p, gene, utr5pFileAbtsID, numObjs, numIter);
+            this.constructORFListAbts(metaData, genInformation, utr5p, gene, utr5pFileAbtsID, utr5pFileAbtsID, numObjs, numIter);
 
             ref_mRNAs = ref_mRNAs + contador_UTR3ps;
             contador_UTR3ps = -1;
@@ -3371,7 +3368,7 @@ public class Analizer {
                     int posicionIniMotivo = motivo.getCoordenadas()[0] + referenciaGlobalCoords + 1;
                     int posicionFinMotivo = motivo.getCoordenadas()[1] + referenciaGlobalCoords + 1;
                     String motifID = motivo.getFactores().get(0).getID();
-                    String motifName = motivo.getFactores().get(0).getNombre();
+                    String motifName = motivo.getFactores().get(0).getID();
 
                     metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tTF_binding_site\t" + posicionIniMotivo + "\t" + posicionFinMotivo + "\t.\t" + metaData.get_hebra() + "\t" + "." + "\t" + "ID=" + motifID + ";Name=" + motifName + ";Parent=" + gen_ID, salidaGTF);
 
@@ -3479,7 +3476,7 @@ public class Analizer {
 
             List<Motivo> corePromoter = utr5p.getPromoter();
             // Se reporta el UTR5p del transcrito en curso.
-            int posIniUTR5p = utr5p.getStart().position; 
+            int posIniUTR5p = utr5p.getStart().position;
             int posFinUTR5p = utr5p.getEnd().position + 1; // !!!!!! OJO que pasa que se requiere sumar 1????
             String utr5pID = mRNA_ID + "-UTR5p-" + String.valueOf(contador_UTR5ps);
 
@@ -3572,11 +3569,18 @@ public class Analizer {
                     metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\texon\t" + (referenciaGlobalCoords - posicionFinExon) + "\t" + (referenciaGlobalCoords - posicionIniExon) + "\t.\t" + metaData.get_hebra() + "\t" + "." + "\t" + "ID=" + exonID + ";Name=" + exonID + ";Parent=" + mRNA_ID, salidaGTF);
                 }
             }
-            String transFactFileID = utr5pFileAbtsID + ".tf";
+            String pathLocal = "salidas/estructuras/";
+            File path = new File("pathLocal");
+            path.mkdir();
+            String pathEstruc = pathLocal + utr5pFileAbtsID;
+            File pathEstructura = new File(pathEstruc);
+            pathEstructura.mkdir();
+            String transFactFileID = pathEstructura + "/" + utr5pFileAbtsID + ".tf";
             File transFTfileID = new File(transFactFileID);
+            transFTfileID.delete();
             // Se mina el archivo de abstracts que describe los eventos de regulacion inherentes al UTR5p en proceso.
             this.listUTR5pHeader(metaData, gene, utr5p, gene.getStart().position, utr5pFileAbtsID, "5p", transFTfileID);
-            //this.constructORFListAbts(metaData, genInformation, utr5p, gene, utr5pFileAbtsID, numObjs, numIter);
+            this.constructORFListAbts(metaData, genInformation, utr5p, gene, utr5pFileAbtsID, pathEstruc, numObjs, numIter);
         }
 
         ref_mRNAs = ref_mRNAs + ++contador_UTR5ps;
@@ -3644,7 +3648,7 @@ public class Analizer {
         File transFTfileID = new File(transFactFileID);
         // Se mina el archivos de abstracts que describe los eventos de regulacion inherentes al UTR5p en proceso.
         this.listUTR5pHeader(metaData, gene, gene, gene.getStart().position, gen_ID, "CDS", transFTfileID);
-        this.constructORFListAbts(metaData, genInformation, gene, gene, gen_ID, numObjs, numIter);
+        this.constructORFListAbts(metaData, genInformation, gene, gene, gen_ID, gen_ID, numObjs, numIter);
 
         contLecturas++;
         return contLecturas;
