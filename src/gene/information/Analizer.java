@@ -2759,6 +2759,8 @@ public class Analizer {
                                 }
                                 if (pass) {
                                     this.lectures.add(lecture);
+                                }else{
+                                    lecture = null;
                                 }
                             }
                         }
@@ -2921,7 +2923,7 @@ public class Analizer {
         return localIDs;
     }
 
-    public void lectsToGFF3(Utilities metaData, File salidaGTF, boolean reporteAbs, GenInformation genInformation, int numObjs, int numIter) throws IOException, Exception {
+    public void lectsToGFF3(Utilities metaData, File salidaGTF, boolean reporteAbs, GenInformation genInformation, int numObjs, int numIter, String red) throws IOException, Exception {
 
         // Se imprime la cabecera del gen en proceso
         String inicioGlobalGen = metaData.get_InicioAbsoluto().toString();
@@ -2948,7 +2950,7 @@ public class Analizer {
             }
         }
 
-        String genID = metaData.get_GenID().get(0);
+        //String genID = metaData.get_GenID().get(0);
         int cont_lects = 0;
         boolean utr5pdefined, utr3pdefined;
 
@@ -2966,7 +2968,7 @@ public class Analizer {
                 utr3pdefined = false;
             }
 
-            String gen_ID = genID + "-gen-" + cont_lects;
+            String gen_ID = "gen-" + cont_lects;
 
             String transFactFileID = gen_ID + ".tf";
             File transFTfileID = new File(transFactFileID);
@@ -2976,7 +2978,7 @@ public class Analizer {
                 cont_lects = reportarUTR5pUTR3p(gene, hebra, cont_lects, salidaGTF, referenciaGlobalCoords, gen_ID, metaData, genInformation, numObjs, numIter);
             }
             if (utr5pdefined && !utr3pdefined) {// Se reporta el caso de transcritos con UTRs5p y no UTRs3p
-                cont_lects = reportarUTR5p(gene, hebra, cont_lects, salidaGTF, referenciaGlobalCoords, gen_ID, metaData, genInformation, numObjs, numIter);
+                cont_lects = reportarUTR5p(gene, hebra, cont_lects, salidaGTF, referenciaGlobalCoords, gen_ID, metaData, genInformation, numObjs, numIter, red);
             }
             if (!utr5pdefined && utr3pdefined) {// Se reporta el caso de transcritos con UTRs5p y no UTRs3p
                 cont_lects = reportarUTR3p(gene, hebra, cont_lects, salidaGTF, referenciaGlobalCoords, gen_ID, metaData);
@@ -3436,7 +3438,7 @@ public class Analizer {
         return ref_mRNAs;
     }
 
-    public int reportarUTR5p(Gene gene, String hebra, int cont_lects, File salidaGTF, int referenciaGlobalCoords, String gen_ID, Utilities metaData, GenInformation genInformation, int numObjs, int numIter) throws IOException, Exception {
+    public int reportarUTR5p(Gene gene, String hebra, int cont_lects, File salidaGTF, int referenciaGlobalCoords, String gen_ID, Utilities metaData, GenInformation genInformation, int numObjs, int numIter, String red) throws IOException, Exception {
 
         // Se imprimen los transcritos.
         int longExon, coordIniTrans, coordFinTrans, posicionIniExon, posicionFinExon, cuadratura = 0;
@@ -3569,12 +3571,25 @@ public class Analizer {
                     metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\texon\t" + (referenciaGlobalCoords - posicionFinExon) + "\t" + (referenciaGlobalCoords - posicionIniExon) + "\t.\t" + metaData.get_hebra() + "\t" + "." + "\t" + "ID=" + exonID + ";Name=" + exonID + ";Parent=" + mRNA_ID, salidaGTF);
                 }
             }
-            String pathLocal = "salidas/estructuras/";
-            File path = new File("pathLocal");
+            
+            String genID = metaData.get_GenID().get(0);
+            //String pathLocal = "salidas/estructuras" + "/" + red + "/" + genID;
+            String pathLocal = "salidas/estructuras";
+            File path = new File(pathLocal);
             path.mkdir();
-            String pathEstruc = pathLocal + utr5pFileAbtsID;
+            
+            String pathE = pathLocal + "/" + red;
+            File pathEst = new File(pathE);
+            pathEst.mkdir();
+            
+            String pathE1 = pathE + "/" + genID;
+            File pathEst1 = new File(pathE1);
+            pathEst1.mkdir();
+          
+            String pathEstruc = pathE1 + "/" + utr5pFileAbtsID;
             File pathEstructura = new File(pathEstruc);
             pathEstructura.mkdir();
+            
             String transFactFileID = pathEstructura + "/" + utr5pFileAbtsID + ".tf";
             File transFTfileID = new File(transFactFileID);
             transFTfileID.delete();

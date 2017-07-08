@@ -50,7 +50,7 @@ public class PredictorILP {
         GenInformation generador = new GenInformation("-", "1", true, true, false, true);
 
         //------llamamos al inicio al cual le vamos a enviar los url de los archivos ---
-        generador.inicio(genesEnProceso, idsGenesEnProceso, salidaPredGFF3, salidaEnsEPDGFF3, args[0], args[1], args[2], args[3], Boolean.parseBoolean(args[4]), Boolean.parseBoolean(args[5]), Boolean.parseBoolean(args[6]), Integer.parseInt(args[7]), Integer.parseInt(args[8]), Boolean.parseBoolean(args[9]));
+        generador.inicio(genesEnProceso, idsGenesEnProceso, salidaPredGFF3, salidaEnsEPDGFF3, args[0], args[1], args[2], args[3], Boolean.parseBoolean(args[4]), Boolean.parseBoolean(args[5]), Boolean.parseBoolean(args[6]), Integer.parseInt(args[7]), Integer.parseInt(args[8]), Boolean.parseBoolean(args[9]), args[10]);
 
     }
 }

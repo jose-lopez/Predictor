@@ -99,7 +99,7 @@ public class GenInformation {
 //-- esta funcion es llamada desde principal la cual envia los url de los archivos 
 // genesEnProceso, idsGenesEnProceso, salidaPredGFF3, salidaEnsEPDGFF3
 
-    public void inicio(String genesEnProceso, String idsGenesEnProceso, String salidaPredGFF3, String salidaEnsEPDGFF3, String gffVersion, String regionID, String regionInicio, String regionFin, boolean ilpinr, boolean consensos, boolean reporteAbs, int numObjs, int numIter, boolean ilpClasificador) throws IOException, Exception {
+    public void inicio(String genesEnProceso, String idsGenesEnProceso, String salidaPredGFF3, String salidaEnsEPDGFF3, String gffVersion, String regionID, String regionInicio, String regionFin, boolean ilpinr, boolean consensos, boolean reporteAbs, int numObjs, int numIter, boolean ilpClasificador, String red) throws IOException, Exception {
         //--se usa el archivo de genesEnProceso y se le pasa a la clase utiliti de la libreria-----------       
         Utilities auxRegistrosEnsembl = new Utilities(genesEnProceso, hebra);
         //-- se desglosa el archivo de genesEnProceso y se escribe un archivo temporal,se hace un archivo temporal por cada gen q se encuentre en la genesEnProceso-------       
@@ -135,7 +135,7 @@ public class GenInformation {
 
             this.guardar_2(escritura, au);
             //---llama a la funcion genera que es la que genera las lecturas en el archivo de salida-------------          
-            this.generaLects("tem", gff3EnsEPD, gff3Predictor, ilpinr, consensos, reporteAbs, numObjs, numIter, ilpClasificador);
+            this.generaLects("tem", gff3EnsEPD, gff3Predictor, ilpinr, consensos, reporteAbs, numObjs, numIter, ilpClasificador, red);
             au.delete();
         }
 
@@ -194,27 +194,29 @@ public class GenInformation {
     }
     //--genera recibe el archivo temporal creado en la funcion inicio ----
 
-    public void generaLects(String entrada, File gff3EnsemblEPDExt, File gff3Predictor, boolean iLPinr, boolean consensos, boolean reporteAbs, int numObjs, int numIter, boolean ilpClasificador) throws IOException, Exception {
+    public void generaLects(String entrada, File gff3EnsemblEPDExt, File gff3Predictor, boolean iLPinr, boolean consensos, boolean reporteAbs, int numObjs, int numIter, boolean ilpClasificador, String red) throws IOException, Exception {
 
         //*
-        List<Integer> atg = new ArrayList<>(Arrays.asList(2101));
-        List<Integer> gt = new ArrayList<>(Arrays.asList(2239));
-        List<Integer> ag = new ArrayList<>(Arrays.asList(3114));
-        List<Integer> stops = new ArrayList<>(Arrays.asList(3327));
-        /*/
-        
-        
+         List<Integer> atg = new ArrayList<>(Arrays.asList(2101));
+         List<Integer> gt = new ArrayList<>(Arrays.asList(2239));
+         List<Integer> ag = new ArrayList<>(Arrays.asList(3114));
+         List<Integer> stops = new ArrayList<>(Arrays.asList(3327));
+         //*/
+
+
         /*
-        List<Integer> atg = new ArrayList<>(Arrays.asList(1721,2101,2749));
-        List<Integer> gt = new ArrayList<>(Arrays.asList(1818,2239,2541));
-        List<Integer> ag = new ArrayList<>(Arrays.asList(2655,3114,3141));
-        List<Integer> stops = new ArrayList<>(Arrays.asList(1536,3327,3569));//*/
+         List<Integer> atg = new ArrayList<>(Arrays.asList(1721,2101,2749));
+         List<Integer> gt = new ArrayList<>(Arrays.asList(1818,2239,2541));
+         List<Integer> ag = new ArrayList<>(Arrays.asList(2655,3114,3141));
+         List<Integer> stops = new ArrayList<>(Arrays.asList(1536,3327,3569));
+         //*/
+
         /*
-        List<Integer> atg = new ArrayList<>(Arrays.asList(1721,2101));
-        List<Integer> gt = new ArrayList<>(Arrays.asList(1818,2239));
-        List<Integer> ag = new ArrayList<>(Arrays.asList(2655,3114));
-        List<Integer> stops = new ArrayList<>(Arrays.asList(1536,3327,3569));*/
-                
+        List<Integer> atg = new ArrayList<>(Arrays.asList(1721, 2101));
+        List<Integer> gt = new ArrayList<>(Arrays.asList(1818, 2239));
+        List<Integer> ag = new ArrayList<>(Arrays.asList(2655, 3114));
+        List<Integer> stops = new ArrayList<>(Arrays.asList(1536, 3327, 3569));//*/
+
 
         //---------------------Nombre de los archivos------------------------------------------------
         String url_archivo_entrada = entrada; // url del Archivo de entrada de la base de datos de internet se puede usar args[0]
@@ -232,12 +234,12 @@ public class GenInformation {
         String secuenciaProceso = metaDataGen.get_Secuencia().get(0);
         String aux = "gen(" + secuenciaProceso + ")."; //se genera gen_prueba
         //String aux2 = secuenciaProceso; //se genera gen para clasificador
-               
-         String secuencia = metaDataGen.get_Secuencia().toString(), secuenciaDos;
-         secuencia = secuencia.replaceAll("[\\[\\]]", "");
-         secuenciaDos = secuencia.replaceAll("[\\[\\]]", "");
-         secuencia = secuencia.replaceAll(",", "");
-                 //.replaceAll("[", "").replaceAll("]", "");
+
+        String secuencia = metaDataGen.get_Secuencia().toString(), secuenciaDos;
+        secuencia = secuencia.replaceAll("[\\[\\]]", "");
+        secuenciaDos = secuencia.replaceAll("[\\[\\]]", "");
+        secuencia = secuencia.replaceAll(",", "");
+        //.replaceAll("[", "").replaceAll("]", "");
 
         genes.delete();
         gen.delete();
@@ -246,7 +248,7 @@ public class GenInformation {
         this.guardar_2(aux, genes);
         this.guardar_2(secuencia, gen);
         this.guardar_2(secuenciaDos, genDos);
-        
+
         List<String> data;
         data = readGene(rutaGen);
 
@@ -257,7 +259,7 @@ public class GenInformation {
         Analizer analizer = new Analizer();
         analizer.readFromLists(atg, gt, ag, stops, data); // Descomentar para trabajar con listas
 
-        //analizer.readFromMiddleWare(middle, false, data, rutaGenClasificador, secuencia); // Se instancia el objeto constructor de lecturas
+        //analizer.readFromMiddleWare(middle, ilpClasificador, data, rutaGenClasificador, secuencia); // Se instancia el objeto constructor de lecturas
         // empleando las predicciones desde Prolog que estan disponibles en el objeto middle. 
         // Al salir de este metodo las listas de predicciones hechas desde prolog estan disponibles
         // en las listas atg, gt, ... del objeto constructor presente en el objeto analizer.
@@ -294,7 +296,7 @@ public class GenInformation {
 
             //analizer.constructRegionUTR3p(metaDataGen, this, false);
 
-            analizer.lectsToGFF3(metaDataGen, gff3Predictor, reporteAbs, this, numObjs, numIter);
+            analizer.lectsToGFF3(metaDataGen, gff3Predictor, reporteAbs, this, numObjs, numIter, red);
 
             analizer.lectsEnsemblEpd(metaDataGen, gff3EnsemblEPDExt, reporteAbs, this);
 
@@ -372,7 +374,7 @@ public class GenInformation {
 
     public static List readGene(String rutaGen) throws FileNotFoundException, IOException {
         String path = System.getProperty("user.dir");
-        path += "/"+rutaGen;
+        path += "/" + rutaGen;
         //Scanner s = new Scanner(new File(path));
         BufferedReader br = new BufferedReader(new FileReader(path));
         ArrayList<String> list = new ArrayList<String>();
