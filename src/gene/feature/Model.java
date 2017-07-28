@@ -31,10 +31,10 @@ public interface Model {
     //---------------------------Static Constants-------------------------------
     // <editor-fold desc="Static Constants">
     //-------- tamaño de un entron y un exon
-    public final int maxIntron = 10000;
+    public final int maxIntron = 2000;
     public final int minIntron = 64;
-    public final int maxExon = 6000;
-    public final int minExon = 50;
+    public final int maxExon = 1000;
+    public final int minExon = 100;
     public final int minUTR5p = 50;
     public final int maxUTR5p = 1000;
     public final int limInfRegionPromo = 1000;

@@ -2773,7 +2773,12 @@ public class Analizer {
                                     }
                                 }
                                 if (pass) {
+                                    String salida = "";
                                     this.lectures.add(lecture);
+                                    for (Exon exon : lecture.getExons()) {
+                                        salida = salida + " " + exon.getPositionsInfo(false);
+                                    }
+                                    System.out.println(salida + "\n");
                                 } else {
                                     lecture = null;
                                 }
