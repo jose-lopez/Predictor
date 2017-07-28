@@ -1,13 +1,3 @@
 ##gff-version	3
 ##sequence-region	3	1	198295559
 
-3	PredictorILP	gene	675	2684	.	-	.	ID=gen-0;Name=gen-0
-3	PredictorILP	mRNA	675	2641	.	-	.	ID=gen-0-mRNA-0;Name=gen-0-mRNA-0;Parent=gen-0
-3	PredictorILP	five_prime_UTR	1901	2641	.	-	.	ID=gen-0-mRNA-0-UTR5p-0;Name=gen-0-mRNA-0-UTR5p-0;Parent=gen-0-mRNA-0
-3	PredictorILP	TF_binding_site	2677	2684	.	-	.	ID=gen-0-TAF1-TATA;Name=gen-0-TAF1-TATA;Parent=gen-0
-3	PredictorILP	TF_binding_site	2637	2644	.	-	.	ID=gen-0-TFIID-Inr;Name=gen-0-TFIID-Inr;Parent=gen-0
-3	PredictorILP	TF_binding_site	2571	2575	.	-	.	ID=gen-0-TFIID-DPE;Name=gen-0-TFIID-DPE;Parent=gen-0
-3	PredictorILP	CDS	1763	1900	.	-	1	ID=gen-0-mRNA-0-CDS-0;Name=gen-0-mRNA-0-CDS-0;Parent=gen-0-mRNA-0
-3	PredictorILP	CDS	674	886	.	-	1	ID=gen-0-mRNA-0-CDS-1;Name=gen-0-mRNA-0-CDS-1;Parent=gen-0-mRNA-0
-3	PredictorILP	exon	1763	2641	.	-	.	ID=gen-0-mRNA-0-Exon-0;Name=gen-0-mRNA-0-Exon-0;Parent=gen-0-mRNA-0
-3	PredictorILP	exon	675	886	.	-	.	ID=gen-0-mRNA-0-Exon-1;Name=gen-0-mRNA-0-Exon-1;Parent=gen-0-mRNA-0

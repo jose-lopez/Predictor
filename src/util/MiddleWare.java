@@ -26,6 +26,7 @@ package util;
 import clasificador.Clasificador;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -392,8 +393,8 @@ public class MiddleWare {
         //Obteniendo los valores...
 
         String[] consensosATG = {"atg"};
-       
-        String[] consensosSTOPS = {"taa","tga","tag"};
+
+        String[] consensosSTOPS = {"taa", "tga", "tag"};
 
 
         String[] consensos = {};
@@ -405,7 +406,7 @@ public class MiddleWare {
         if (!sitio) {
             consensos = consensosSTOPS;
         }
-        
+
         int coordActual = 0;
 
         List<Integer> coords = new ArrayList<>();
@@ -413,7 +414,7 @@ public class MiddleWare {
         for (String consenso : consensos) {
 
             Pattern p = Pattern.compile(consenso);
-            Matcher m = p.matcher(secuencia);           
+            Matcher m = p.matcher(secuencia);
 
             while (m.find()) {
 
@@ -424,19 +425,39 @@ public class MiddleWare {
         }
 
         int coordAct, contCoord = 0;
+        int[] coordsTemp;
+
+        coordsTemp = new int[coords.size()];
 
         if (!sitio) {
 
             for (Integer coord : coords) {
 
-                coordAct = coord.intValue() + 2;
+                coordAct = coord.intValue();
 
-                coords.set(contCoord, coordAct);
-                
+                coordsTemp[contCoord] = coordAct;
+
                 contCoord++;
 
             }
+
+            Arrays.sort(coordsTemp);
+
+            contCoord = 0;
+
+            for (Integer coord : coords) {
+
+                coordAct = coordsTemp[contCoord] + 2;
+                
+                coords.set(contCoord, coordAct);
+
+                contCoord++;
+
+            }
+
         }
+
+
 
         return coords;
 

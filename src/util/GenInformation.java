@@ -196,11 +196,11 @@ public class GenInformation {
 
     public void generaLects(String entrada, File gff3EnsemblEPDExt, File gff3Predictor, boolean iLPinr, boolean consensos, boolean reporteAbs, int numObjs, int numIter, boolean ilpClasificador, String red) throws IOException, Exception {
 
-        //*
+        /*
          List<Integer> atg = new ArrayList<>(Arrays.asList(2101));
          List<Integer> gt = new ArrayList<>(Arrays.asList(2239));
          List<Integer> ag = new ArrayList<>(Arrays.asList(3114));
-         List<Integer> stops = new ArrayList<>(Arrays.asList(3327));
+         List<Integer> stops = new ArrayList<>(Arrays.asList(3230, 3248, 3327, 3336, 3340, 3363, 3397, 3430));
          //*/
 
 
@@ -215,7 +215,13 @@ public class GenInformation {
         List<Integer> atg = new ArrayList<>(Arrays.asList(1721, 2101));
         List<Integer> gt = new ArrayList<>(Arrays.asList(1818, 2239));
         List<Integer> ag = new ArrayList<>(Arrays.asList(2655, 3114));
-        List<Integer> stops = new ArrayList<>(Arrays.asList(1536, 3327, 3569));//*/
+        List<Integer> stops = new ArrayList<>(Arrays.asList(1536, 3327));//*/
+        
+        //*
+        List<Integer> atg = new ArrayList<>(Arrays.asList(2101));
+        List<Integer> gt = new ArrayList<>(Arrays.asList(1847, 2239, 2459));
+        List<Integer> ag = new ArrayList<>(Arrays.asList(2059, 2341, 2655, 3114));
+        List<Integer> stops = new ArrayList<>(Arrays.asList(3327));//*/
 
 
         //---------------------Nombre de los archivos------------------------------------------------
@@ -257,9 +263,9 @@ public class GenInformation {
         middle.init("p_genes.pl"); //Se inicializa el objeto predictor con el codigo del predictor.
 
         Analizer analizer = new Analizer();
-        analizer.readFromLists(atg, gt, ag, stops, data); // Descomentar para trabajar con listas
+        //analizer.readFromLists(atg, gt, ag, stops, data); // Descomentar para trabajar con listas
 
-        //analizer.readFromMiddleWare(middle, ilpClasificador, data, rutaGenClasificador, secuencia); // Se instancia el objeto constructor de lecturas
+        analizer.readFromMiddleWare(middle, ilpClasificador, data, rutaGenClasificador, secuencia); // Se instancia el objeto constructor de lecturas
         // empleando las predicciones desde Prolog que estan disponibles en el objeto middle. 
         // Al salir de este metodo las listas de predicciones hechas desde prolog estan disponibles
         // en las listas atg, gt, ... del objeto constructor presente en el objeto analizer.
@@ -284,7 +290,7 @@ public class GenInformation {
          Information finExon = constructor.getData(1237);
          List<Information> innnerExon = constructor.getInnerInfo(inicioExon.position + 1, finExon.position);
          Exon exon = new Exon(inicioExon, finExon, innnerExon);
-         lectura.addExon(exon);
+         lectura.addExon(exon);introns
          //String temp = lectura.toString();
          analizer.getLectures().add(lectura);//*/
 

@@ -533,12 +533,12 @@ public class Analizer {
     public Region constructORFListAbts(Utilities metaData, GenInformation genInformation, Gene utr5p, Gene gene, String estructura, String pathEstructura, int numObjs, int numIter) throws Exception {
 
         //String fileAbID = estructura + ".abst";
-        System.out.println("Definiendo listado de FTs para transcrito y UTR5p: " + estructura);
+        System.out.println("Definiendo listado de FTs para: " + estructura);
 
         Information inicioUTR5p = utr5p.getStart();
         int iniRegionPromo, finRegionProm;
 
-        System.out.println("inicioUTR5p:" + inicioUTR5p.position);
+        //System.out.println("inicioUTR5p:" + inicioUTR5p.position);
 
         iniRegionPromo = inicioUTR5p.position - Model.limInfRegionPromo;
         finRegionProm = inicioUTR5p.position + Model.limSupRegionPromo;
@@ -566,7 +566,7 @@ public class Analizer {
 
         // Se preparan los datos a pasar al pipeline
         regionPromotoraORF = regionPromotoraORF.toUpperCase();
-        String regionUTR5p = pathEstructura + "/"+ estructura + ".rg";
+        String regionUTR5p = pathEstructura + "/" + estructura + ".rg";
         File fileRegionUTR5p = new File(regionUTR5p);
         fileRegionUTR5p.delete();
         metaData.guardar(regionPromotoraORF, fileRegionUTR5p);
@@ -578,17 +578,17 @@ public class Analizer {
         //Region regionPromotora = pipeline.pipelineBioPattern("regionProm.txt", "regionProm.txt", "0.95", 10, numObjs, numIter, estructura + ".txt", true);
         Region regionPromotora = pipeline.pipelineBioPatternRP(regionUTR5p, "0.99", 0, 0);
 
-        String transFactFileID = pathEstructura + "/"+ estructura + ".tf";
+        String transFactFileID = pathEstructura + "/" + estructura + ".tf";
 
         File transFTfileID = new File(transFactFileID);
 
-        String listsFacts = pathEstructura + "/"+ estructura + ".pl";
+        String listsFacts = pathEstructura + "/" + estructura + ".pl";
 
         File listFts = new File(listsFacts);
         listFts.delete();
 
-        System.out.println("Listado de factores de transcripción para ORF:" + estructura);
-        metaData.guardar("Listado de factores de transcripción para ORF:" + estructura + "\n", transFTfileID);
+        System.out.println("Listado de factores de transcripción para:" + estructura);
+        metaData.guardar("Listado de factores de transcripción para:" + estructura + "\n", transFTfileID);
         System.out.println("Motivo:\t\t\t\tCoords:\t\tFactor Simbolo:\tFactor Name:");
         metaData.guardar("Motivo:\t\t\t\tCoords:\t\tFactor Simbolo:\tFactor Name:\n", transFTfileID);
 
@@ -648,7 +648,7 @@ public class Analizer {
             }
         }
 
-        System.out.println("Lista de factores de transcripción para ORF:" + estructura);
+        System.out.println("Lista de factores de transcripción para:" + estructura);
         System.out.println(listaFTstrings);
         metaData.guardar(listaFTstrings, listFts);
 
@@ -718,8 +718,8 @@ public class Analizer {
             metaData.guardar(coorATG + "\t" + coorATG + "\t" + "NA" + "\t" + coordsRegionReg[0] + "\t" + coordsRegionReg[1] + "\n", transFTfileID);
 
         }
-        
-        
+
+
     }
 
     /**
@@ -2630,9 +2630,18 @@ public class Analizer {
             }
 
             if (possibleMix.size() > 0) {
-                mixedIntrons.add(possibleMix);
+
+                mixedIntrons.add(possibleMix.clone());
+                possibleMix.pollLast();
+                while (!possibleMix.isEmpty()) {
+
+                    mixedIntrons.add(possibleMix.clone());
+                    possibleMix.pollLast();
+                }
             }
         }
+
+
 
         return mixedIntrons;
     }
@@ -2702,13 +2711,19 @@ public class Analizer {
         while (!mixedIntrons.isEmpty()) {
             ArrayDeque<Intron> introns = mixedIntrons.poll();
             boolean shouldCheck = !(constructor.isWithoutStarts() || constructor.isWithoutStops());
-
+            int coorLastIntron;
+            coorLastIntron = introns.peekLast().getEnd().position;
+            int coorFirstIntron;
+            coorFirstIntron = introns.peekFirst().getStart().position;
+            //System.out.println("coorFirstIntron: " + coorFirstIntron + "  coorLastIntron: " + coorLastIntron);
             for (Integer start : constructor.getAtg()) {
-                int d = introns.peekFirst().getStart().position - start;
+                int d = coorFirstIntron - start;
 
                 if (d >= Model.minExon && d <= Model.maxExon) {
                     for (Integer end : constructor.getStops()) {
-                        d = (end + 1) - introns.peekLast().getEnd().position;
+
+                        //System.out.println("coorStop: " + end.intValue());
+                        d = (end + 1) - coorLastIntron;
 
                         if (d >= Model.minExon && d <= Model.maxExon) {
                             //  List<Information> geneData = constructor.getGeneData();
@@ -2759,7 +2774,7 @@ public class Analizer {
                                 }
                                 if (pass) {
                                     this.lectures.add(lecture);
-                                }else{
+                                } else {
                                     lecture = null;
                                 }
                             }
@@ -2970,10 +2985,6 @@ public class Analizer {
 
             String gen_ID = "gen-" + cont_lects;
 
-            String transFactFileID = gen_ID + ".tf";
-            File transFTfileID = new File(transFactFileID);
-            transFTfileID.delete();
-
             if (utr5pdefined && utr3pdefined) {// Se reporta el caso de transcritos con UTRs5p y UTRs3p
                 cont_lects = reportarUTR5pUTR3p(gene, hebra, cont_lects, salidaGTF, referenciaGlobalCoords, gen_ID, metaData, genInformation, numObjs, numIter);
             }
@@ -2984,7 +2995,7 @@ public class Analizer {
                 cont_lects = reportarUTR3p(gene, hebra, cont_lects, salidaGTF, referenciaGlobalCoords, gen_ID, metaData);
             }
             if (!utr5pdefined && !utr3pdefined) {// Se reporta el caso de transcritos con UTRs5p y no UTRs3p
-                cont_lects = reportarCDS(gene, hebra, cont_lects, salidaGTF, referenciaGlobalCoords, gen_ID, metaData, genInformation, numObjs, numIter);
+                cont_lects = reportarCDS(gene, hebra, cont_lects, salidaGTF, referenciaGlobalCoords, gen_ID, metaData, genInformation, numObjs, numIter, red);
             }
 
             //this.constructORFListAbts(metaData, genInformation, gene, gene.getStart().position, gen_ID);
@@ -3468,7 +3479,7 @@ public class Analizer {
             mRNAs = contador_UTR5ps;
             String mRNA_ID = gen_ID + "-mRNA-" + mRNAs;
             utr5pFileAbtsID = mRNA_ID + "-UTR5p-" + String.valueOf(contador_UTR5ps);
-            //utr5pFileAbtsID = mRNA_ID;
+            //utr5pFileAbtsID = ORF_ID;
 
             if (hebra.equals("+")) {
                 metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tmRNA\t" + (coordIniTrans + referenciaGlobalCoords + 1) + "\t" + (coordFinTrans + referenciaGlobalCoords + 1) + "\t.\t" + metaData.get_hebra() + "\t.\tID=" + mRNA_ID + ";Name=" + mRNA_ID + ";Parent=" + gen_ID, salidaGTF);
@@ -3571,25 +3582,25 @@ public class Analizer {
                     metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\texon\t" + (referenciaGlobalCoords - posicionFinExon) + "\t" + (referenciaGlobalCoords - posicionIniExon) + "\t.\t" + metaData.get_hebra() + "\t" + "." + "\t" + "ID=" + exonID + ";Name=" + exonID + ";Parent=" + mRNA_ID, salidaGTF);
                 }
             }
-            
+
             String genID = metaData.get_GenID().get(0);
             //String pathLocal = "salidas/estructuras" + "/" + red + "/" + genID;
             String pathLocal = "salidas/estructuras";
             File path = new File(pathLocal);
             path.mkdir();
-            
+
             String pathE = pathLocal + "/" + red;
             File pathEst = new File(pathE);
             pathEst.mkdir();
-            
+
             String pathE1 = pathE + "/" + genID;
             File pathEst1 = new File(pathE1);
             pathEst1.mkdir();
-          
+
             String pathEstruc = pathE1 + "/" + utr5pFileAbtsID;
             File pathEstructura = new File(pathEstruc);
             pathEstructura.mkdir();
-            
+
             String transFactFileID = pathEstructura + "/" + utr5pFileAbtsID + ".tf";
             File transFTfileID = new File(transFactFileID);
             transFTfileID.delete();
@@ -3603,7 +3614,7 @@ public class Analizer {
 
     }
 
-    public int reportarCDS(Gene gene, String hebra, int cont_lects, File salidaGTF, int referenciaGlobalCoords, String gen_ID, Utilities metaData, GenInformation genInformation, int numObjs, int numIter) throws IOException, Exception {
+    public int reportarCDS(Gene gene, String hebra, int cont_lects, File salidaGTF, int referenciaGlobalCoords, String gen_ID, Utilities metaData, GenInformation genInformation, int numObjs, int numIter, String red) throws IOException, Exception {
 
         // Se imprimen los transcritos compuestos solo de CDSs.
         int longExon, coordIniTrans, coordFinTrans, posicionIniExon, posicionFinExon, cuadratura;
@@ -3621,12 +3632,12 @@ public class Analizer {
             metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tgene\t" + (referenciaGlobalCoords - coordFinTrans) + "\t" + (referenciaGlobalCoords - coordIniTrans) + "\t.\t" + metaData.get_hebra() + "\t.\tID=" + gen_ID + ";Name=" + gen_ID, salidaGTF);
         }
 
-        String mRNA_ID = gen_ID + "-mRNA-" + "0";
+        String ORF_ID = gen_ID + "-ORF-" + "0";
 
         if (hebra.equals("+")) {
-            metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tmRNA\t" + (coordIniTrans + referenciaGlobalCoords + 1) + "\t" + (coordFinTrans + referenciaGlobalCoords + 1) + "\t.\t" + metaData.get_hebra() + "\t.\tID=" + mRNA_ID + ";Name=" + mRNA_ID + ";Parent=" + gen_ID, salidaGTF);
+            metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tmRNA\t" + (coordIniTrans + referenciaGlobalCoords + 1) + "\t" + (coordFinTrans + referenciaGlobalCoords + 1) + "\t.\t" + metaData.get_hebra() + "\t.\tID=" + ORF_ID + ";Name=" + ORF_ID + ";Parent=" + gen_ID, salidaGTF);
         } else {
-            metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tmRNA\t" + (referenciaGlobalCoords - coordFinTrans) + "\t" + (referenciaGlobalCoords - coordIniTrans) + "\t.\t" + metaData.get_hebra() + "\t.\tID=" + mRNA_ID + ";Name=" + mRNA_ID + ";Parent=" + gen_ID, salidaGTF);
+            metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tmRNA\t" + (referenciaGlobalCoords - coordFinTrans) + "\t" + (referenciaGlobalCoords - coordIniTrans) + "\t.\t" + metaData.get_hebra() + "\t.\tID=" + ORF_ID + ";Name=" + ORF_ID + ";Parent=" + gen_ID, salidaGTF);
         }
 
         // Se procede a reportar CDS.
@@ -3645,25 +3656,46 @@ public class Analizer {
                 cuadratura = (longExon % 3);
 
             }
-            String cdsID = mRNA_ID + "-CDS-" + numeCDSs;
-            String exonID = mRNA_ID + "-exon-" + numeCDSs;
+            String cdsID = ORF_ID + "-CDS-" + numeCDSs;
+            String exonID = ORF_ID + "-exon-" + numeCDSs;
             numeCDSs++;
 
             if (hebra.equals("+")) {
-                metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tCDS\t" + (referenciaGlobalCoords + 1 + posicionIniExon) + "\t" + (posicionFinExon + referenciaGlobalCoords + 1) + "\t.\t" + metaData.get_hebra() + "\t" + cuadratura + "\t" + "ID=" + cdsID + ";Name=" + cdsID + ";Parent=" + mRNA_ID, salidaGTF);
-                metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\texon\t" + (referenciaGlobalCoords + 1 + posicionIniExon) + "\t" + (posicionFinExon + referenciaGlobalCoords + 1) + "\t.\t" + metaData.get_hebra() + "\t" + "." + "\t" + "ID=" + exonID + ";Name=" + exonID + ";Parent=" + mRNA_ID, salidaGTF);
+                metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tCDS\t" + (referenciaGlobalCoords + 1 + posicionIniExon) + "\t" + (posicionFinExon + referenciaGlobalCoords + 1) + "\t.\t" + metaData.get_hebra() + "\t" + cuadratura + "\t" + "ID=" + cdsID + ";Name=" + cdsID + ";Parent=" + ORF_ID, salidaGTF);
+                metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\texon\t" + (referenciaGlobalCoords + 1 + posicionIniExon) + "\t" + (posicionFinExon + referenciaGlobalCoords + 1) + "\t.\t" + metaData.get_hebra() + "\t" + "." + "\t" + "ID=" + exonID + ";Name=" + exonID + ";Parent=" + ORF_ID, salidaGTF);
             } else {
-                metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tCDS\t" + (referenciaGlobalCoords - posicionFinExon) + "\t" + (referenciaGlobalCoords - posicionIniExon) + "\t.\t" + metaData.get_hebra() + "\t" + cuadratura + "\t" + "ID=" + cdsID + ";Name=" + cdsID + ";Parent=" + mRNA_ID, salidaGTF);
-                metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\texon\t" + (referenciaGlobalCoords - posicionFinExon) + "\t" + (referenciaGlobalCoords - posicionIniExon) + "\t.\t" + metaData.get_hebra() + "\t" + "." + "\t" + "ID=" + exonID + ";Name=" + exonID + ";Parent=" + mRNA_ID, salidaGTF);
+                metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tCDS\t" + (referenciaGlobalCoords - posicionFinExon) + "\t" + (referenciaGlobalCoords - posicionIniExon) + "\t.\t" + metaData.get_hebra() + "\t" + cuadratura + "\t" + "ID=" + cdsID + ";Name=" + cdsID + ";Parent=" + ORF_ID, salidaGTF);
+                metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\texon\t" + (referenciaGlobalCoords - posicionFinExon) + "\t" + (referenciaGlobalCoords - posicionIniExon) + "\t.\t" + metaData.get_hebra() + "\t" + "." + "\t" + "ID=" + exonID + ";Name=" + exonID + ";Parent=" + ORF_ID, salidaGTF);
             }
 
         }
 
-        String transFactFileID = gen_ID + ".tf";
+        String genID = metaData.get_GenID().get(0);
+        //String pathLocal = "salidas/estructuras" + "/" + red + "/" + genID;
+        String pathLocal = "salidas/estructuras";
+        File path = new File(pathLocal);
+        path.mkdir();
+
+        String pathE = pathLocal + "/" + red;
+        File pathEst = new File(pathE);
+        pathEst.mkdir();
+
+        String pathE1 = pathE + "/" + genID;
+        File pathEst1 = new File(pathE1);
+        pathEst1.mkdir();
+
+        String pathEstruc = pathE1 + "/" + ORF_ID;
+        File pathEstructura = new File(pathEstruc);
+        pathEstructura.mkdir();
+
+        String transFactFileID = pathEstructura + "/" + ORF_ID + ".tf";
         File transFTfileID = new File(transFactFileID);
+        transFTfileID.delete();
+
+
         // Se mina el archivos de abstracts que describe los eventos de regulacion inherentes al UTR5p en proceso.
-        this.listUTR5pHeader(metaData, gene, gene, gene.getStart().position, gen_ID, "CDS", transFTfileID);
-        this.constructORFListAbts(metaData, genInformation, gene, gene, gen_ID, gen_ID, numObjs, numIter);
+        this.listUTR5pHeader(metaData, gene, gene, gene.getStart().position, ORF_ID, "CDS", transFTfileID);
+        this.constructORFListAbts(metaData, genInformation, gene, gene, ORF_ID, pathEstruc, numObjs, numIter);
 
         contLecturas++;
         return contLecturas;
