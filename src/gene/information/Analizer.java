@@ -2943,7 +2943,7 @@ public class Analizer {
         return localIDs;
     }
 
-    public void lectsToGFF3(Utilities metaData, File salidaGTF, boolean reporteAbs, GenInformation genInformation, int numObjs, int numIter, String red) throws IOException, Exception {
+    public void lectsToGFF3(Utilities metaData, File salidaGTF, boolean reporteAbs, GenInformation genInformation, int numObjs, int numIter, String red, boolean complementarios) throws IOException, Exception {
 
         // Se imprime la cabecera del gen en proceso
         String inicioGlobalGen = metaData.get_InicioAbsoluto().toString();
@@ -3000,7 +3000,7 @@ public class Analizer {
                 cont_lects = reportarUTR3p(gene, hebra, cont_lects, salidaGTF, referenciaGlobalCoords, gen_ID, metaData);
             }
             if (!utr5pdefined && !utr3pdefined) {// Se reporta el caso de transcritos con UTRs5p y no UTRs3p
-                cont_lects = reportarCDS(gene, hebra, cont_lects, salidaGTF, referenciaGlobalCoords, gen_ID, metaData, genInformation, numObjs, numIter, red);
+                cont_lects = reportarCDS(gene, hebra, cont_lects, salidaGTF, referenciaGlobalCoords, gen_ID, metaData, genInformation, numObjs, numIter, red, complementarios);
             }
 
             //this.constructORFListAbts(metaData, genInformation, gene, gene.getStart().position, gen_ID);
@@ -3619,7 +3619,7 @@ public class Analizer {
 
     }
 
-    public int reportarCDS(Gene gene, String hebra, int cont_lects, File salidaGTF, int referenciaGlobalCoords, String gen_ID, Utilities metaData, GenInformation genInformation, int numObjs, int numIter, String red) throws IOException, Exception {
+    public int reportarCDS(Gene gene, String hebra, int cont_lects, File salidaGTF, int referenciaGlobalCoords, String gen_ID, Utilities metaData, GenInformation genInformation, int numObjs, int numIter, String red, boolean complementarios) throws IOException, Exception {
 
         // Se imprimen los transcritos compuestos solo de CDSs.
         int longExon, coordIniTrans, coordFinTrans, posicionIniExon, posicionFinExon, cuadratura;
@@ -3675,33 +3675,37 @@ public class Analizer {
 
         }
 
-        String genID = metaData.get_GenID().get(0);
-        //String pathLocal = "salidas/estructuras" + "/" + red + "/" + genID;
-        String pathLocal = "salidas/estructuras";
-        File path = new File(pathLocal);
-        path.mkdir();
+        if (complementarios) {
+            
+            String genID = metaData.get_GenID().get(0);
+            //String pathLocal = "salidas/estructuras" + "/" + red + "/" + genID;
+            String pathLocal = "salidas/estructuras";
+            File path = new File(pathLocal);
+            path.mkdir();
 
-        String pathE = pathLocal + "/" + red;
-        File pathEst = new File(pathE);
-        pathEst.mkdir();
+            String pathE = pathLocal + "/" + red;
+            File pathEst = new File(pathE);
+            pathEst.mkdir();
 
-        String pathE1 = pathE + "/" + genID;
-        File pathEst1 = new File(pathE1);
-        pathEst1.mkdir();
+            String pathE1 = pathE + "/" + genID;
+            File pathEst1 = new File(pathE1);
+            pathEst1.mkdir();
 
-        String pathEstruc = pathE1 + "/" + ORF_ID;
-        File pathEstructura = new File(pathEstruc);
-        pathEstructura.mkdir();
+            String pathEstruc = pathE1 + "/" + ORF_ID;
+            File pathEstructura = new File(pathEstruc);
+            pathEstructura.mkdir();
 
-        String transFactFileID = pathEstructura + "/" + ORF_ID + ".tf";
-        File transFTfileID = new File(transFactFileID);
-        transFTfileID.delete();
+            String transFactFileID = pathEstructura + "/" + ORF_ID + ".tf";
+            File transFTfileID = new File(transFactFileID);
+            transFTfileID.delete();
 
 
-        // Se mina el archivos de abstracts que describe los eventos de regulacion inherentes al UTR5p en proceso.
-        this.listUTR5pHeader(metaData, gene, gene, gene.getStart().position, ORF_ID, "CDS", transFTfileID);
-        this.constructORFListAbts(metaData, genInformation, gene, gene, ORF_ID, pathEstruc, numObjs, numIter);
+            // Se mina el archivos de abstracts que describe los eventos de regulacion inherentes al UTR5p en proceso.
+            this.listUTR5pHeader(metaData, gene, gene, gene.getStart().position, ORF_ID, "CDS", transFTfileID);
+            this.constructORFListAbts(metaData, genInformation, gene, gene, ORF_ID, pathEstruc, numObjs, numIter);
 
+        }
+        
         contLecturas++;
         return contLecturas;
 

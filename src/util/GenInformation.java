@@ -49,8 +49,74 @@ import util.MiddleWare;
 public class GenInformation {
     //-- estas 4 variables boolean se utilizan para excluir lo que se va a mostrar en el archivo final, que son los atg, las paradas, los intrones y exones----
 
+    private boolean STOP;
+    private boolean INTRONES;
+    private boolean EXONES;
+    private String hebra;
+    private String lect, KT;
     private int[] globIDs = {0, 0};
     private boolean ATG;
+    private boolean GORF;
+    private boolean GT;
+    private boolean GPR;
+    private boolean complementarios;
+
+    //--- este constructor recibe la hebra, el cual pone todo en true para que haga todo y lect completo para que haga todas las lecturas---
+    public GenInformation(String Hebra) {
+        ATG = true;
+        STOP = true;
+        INTRONES = true;
+        EXONES = true;
+        hebra = Hebra;
+        lect = "completo";
+    }
+//Este constructor recibe la hebra, recibe las lecturas y los boolean de los atg paradas ect , para especificar que es lo que se quiere hacer-----------
+
+    public GenInformation(String Hebra, String Lecturas, boolean atg, boolean stop, boolean intrones, boolean exones, boolean gorf, boolean gt, boolean gpr, boolean complementarios) {
+        ATG = atg;
+        STOP = stop;
+        INTRONES = intrones;
+        EXONES = exones;
+        hebra = Hebra;
+        lect = Lecturas;
+        this.setGORF(gorf);
+        this.setGT(gt);
+        this.setGPR(gpr);
+        this.setComplementarios(complementarios);
+    }
+    //--genera recibe el archivo temporal creado en la funcion inicio ----
+
+    public boolean isComplementarios() {
+        return complementarios;
+    }
+
+    public void setComplementarios(boolean complementarios) {
+        this.complementarios = complementarios;
+    }
+
+    public boolean isGORF() {
+        return GORF;
+    }
+
+    public boolean isGT() {
+        return GT;
+    }
+
+    public boolean isGPR() {
+        return GPR;
+    }
+
+    public void setGORF(boolean GORF) {
+        this.GORF = GORF;
+    }
+
+    public void setGT(boolean GT) {
+        this.GT = GT;
+    }
+
+    public void setGPR(boolean GPR) {
+        this.GPR = GPR;
+    }
 
     // Probando probando
     public int[] getGlobIDs() {
@@ -84,11 +150,6 @@ public class GenInformation {
     public String getKT() {
         return KT;
     }
-    private boolean STOP;
-    private boolean INTRONES;
-    private boolean EXONES;
-    private String hebra;
-    private String lect, KT;
 
     public void guardar_2(String palabra, File salida) throws IOException {
         try (BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(salida, false), "UTF8"))) {
@@ -140,17 +201,6 @@ public class GenInformation {
         }
 
     }
-//--- este constructor recibe la hebra, el cual pone todo en true para que haga todo y lect completo para que haga todas las lecturas---
-
-    public GenInformation(String Hebra) {
-        ATG = true;
-        STOP = true;
-        INTRONES = true;
-        EXONES = true;
-        hebra = Hebra;
-        lect = "completo";
-    }
-//Este constructor recibe la hebra, recibe las lecturas y los boolean de los atg paradas ect , para especificar que es lo que se quiere hacer-----------
 
     public void setGlobIDs(int[] globIDs) {
         this.globIDs = globIDs;
@@ -184,16 +234,6 @@ public class GenInformation {
         this.KT = KT;
     }
 
-    public GenInformation(String Hebra, String Lecturas, boolean atg, boolean stop, boolean intrones, boolean exones) {
-        ATG = atg;
-        STOP = stop;
-        INTRONES = intrones;
-        EXONES = exones;
-        hebra = Hebra;
-        lect = Lecturas;
-    }
-    //--genera recibe el archivo temporal creado en la funcion inicio ----
-
     public void generaLects(String entrada, File gff3EnsemblEPDExt, File gff3Predictor, boolean iLPinr, boolean consensos, boolean reporteAbs, int numObjs, int numIter, boolean ilpClasificador, String red) throws IOException, Exception {
 
         /*
@@ -212,16 +252,16 @@ public class GenInformation {
          //*/
 
         /*
-        List<Integer> atg = new ArrayList<>(Arrays.asList(1721, 2101));
-        List<Integer> gt = new ArrayList<>(Arrays.asList(1818, 2239));
-        List<Integer> ag = new ArrayList<>(Arrays.asList(2655, 3114));
-        List<Integer> stops = new ArrayList<>(Arrays.asList(1536, 3327));//*/
-        
-        //*
-        List<Integer> atg = new ArrayList<>(Arrays.asList(2101));
-        List<Integer> gt = new ArrayList<>(Arrays.asList(1847, 2239, 2459));
-        List<Integer> ag = new ArrayList<>(Arrays.asList(2059, 2341, 2655, 3114));
-        List<Integer> stops = new ArrayList<>(Arrays.asList(3327));//*/
+         List<Integer> atg = new ArrayList<>(Arrays.asList(1721, 2101));
+         List<Integer> gt = new ArrayList<>(Arrays.asList(1818, 2239));
+         List<Integer> ag = new ArrayList<>(Arrays.asList(2655, 3114));
+         List<Integer> stops = new ArrayList<>(Arrays.asList(1536, 3327));//*/
+
+        /*
+         List<Integer> atg = new ArrayList<>(Arrays.asList(2101));
+         List<Integer> gt = new ArrayList<>(Arrays.asList(1847, 2239, 2459));
+         List<Integer> ag = new ArrayList<>(Arrays.asList(2059, 2341, 2655, 3114));
+         List<Integer> stops = new ArrayList<>(Arrays.asList(3327));//*/
 
 
         //---------------------Nombre de los archivos------------------------------------------------
@@ -273,36 +313,19 @@ public class GenInformation {
         GeneConstructor constructor = analizer.getConstructor(); // Se puede acceder a las predicciones.
 
         analizer.constructLectures(false); //Se construyen las lecturas (true metodo recursivo, false interactivo).
-        //System.out.println("" + analizer.toString()); // Se imprimen en consola todos los intrones y exones hallados.
 
-        //analizer.filtrar();
-        //analizer.lectsToString();
-
-        //System.out.println(analizer.lectsToString());
-        /*
-         Information inicioGen = constructor.getGeneData().get(1075);
-         Information finGen = constructor.getGeneData().get(1235);
-         //List<Information> genData = analizer.getLectures().get(0).getData();        
-         List<Information> genData = constructor.getInnerInfo(0, constructor.lastData() - 1);
-         Gene lectura = new Gene(inicioGen, finGen, true, genData);
-         //String temp = lectura.toString();
-         Information inicioExon = constructor.getData(1075);
-         Information finExon = constructor.getData(1237);
-         List<Information> innnerExon = constructor.getInnerInfo(inicioExon.position + 1, finExon.position);
-         Exon exon = new Exon(inicioExon, finExon, innnerExon);
-         lectura.addExon(exon);introns
-         //String temp = lectura.toString();
-         analizer.getLectures().add(lectura);//*/
+        System.out.println("" + analizer.toString()); // Se imprimen en consola todos los intrones y exones hallados.
 
         if (!analizer.getLectures().isEmpty()) {
 
             System.out.println("Numero de ORFs: " + analizer.getLectures().size());
 
-            analizer.constructRegionUTR5p(metaDataGen, this, iLPinr, consensos); // pasar iLPinr = false implica que se proponen TSSs por consensos.
-
+            if (this.isGT()) {
+                analizer.constructRegionUTR5p(metaDataGen, this, iLPinr, consensos); // pasar iLPinr = false implica que se proponen TSSs por consensos.
+            }
             //analizer.constructRegionUTR3p(metaDataGen, this, false);
 
-            analizer.lectsToGFF3(metaDataGen, gff3Predictor, reporteAbs, this, numObjs, numIter, red);
+            analizer.lectsToGFF3(metaDataGen, gff3Predictor, reporteAbs, this, numObjs, numIter, red, this.isComplementarios());
 
             analizer.lectsEnsemblEpd(metaDataGen, gff3EnsemblEPDExt, reporteAbs, this);
 
