@@ -2774,10 +2774,7 @@ public class Analizer {
                                 }
                                 if (pass) {
                                     String salida = "";
-                                    this.lectures.add(lecture);
-                                    for (Exon exon : lecture.getExons()) {
-                                        salida = salida + " " + exon.getPositionsInfo(false);
-                                    }
+                                    this.lectures.add(lecture);                                    
                                     System.out.println(salida + "\n");
                                 } else {
                                     lecture = null;
@@ -3749,8 +3746,8 @@ public class Analizer {
 
             if (temp[0].equals(ensemblIDEPD)) {
                 hugoID = temp[1];
-                ensemblID = temp[2];
-                coordTssEnsembl = Integer.parseInt(temp[3]);
+                ensemblID = ensemblIDEPD;
+                coordTssEnsembl = Integer.parseInt(temp[2]);
                 hugoIDdisponible = true;
                 break;
             }

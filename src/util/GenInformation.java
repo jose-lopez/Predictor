@@ -314,7 +314,7 @@ public class GenInformation {
 
         analizer.constructLectures(false); //Se construyen las lecturas (true metodo recursivo, false interactivo).
 
-        System.out.println("" + analizer.toString()); // Se imprimen en consola todos los intrones y exones hallados.
+        //System.out.println("" + analizer.toString()); // Se imprimen en consola todos los intrones y exones hallados.
 
         if (!analizer.getLectures().isEmpty()) {
 
