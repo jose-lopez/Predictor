@@ -576,7 +576,7 @@ public class Analizer {
         // que le reconocen. Alli deben estar los factores que definen un core promoter.
         BioPattern pipeline = new BioPattern(regionUTR5p, regionUTR5p);
         //Region regionPromotora = pipeline.pipelineBioPattern("regionProm.txt", "regionProm.txt", "0.95", 10, numObjs, numIter, estructura + ".txt", true);
-        Region regionPromotora = pipeline.pipelineBioPatternRP(regionUTR5p, "0.99", 0, 0);
+        Region regionPromotora = pipeline.pipelineBioPatternRP(regionUTR5p, "0.95", 0, 0);
 
         String transFactFileID = pathEstructura + "/" + estructura + ".tf";
 
@@ -2774,7 +2774,7 @@ public class Analizer {
                                 }
                                 if (pass) {
                                     String salida = "";
-                                    this.lectures.add(lecture);                                    
+                                    this.lectures.add(lecture);
                                     System.out.println(salida + "\n");
                                 } else {
                                     lecture = null;
@@ -2991,7 +2991,7 @@ public class Analizer {
                 cont_lects = reportarUTR5pUTR3p(gene, hebra, cont_lects, salidaGTF, referenciaGlobalCoords, gen_ID, metaData, genInformation, numObjs, numIter);
             }
             if (utr5pdefined && !utr3pdefined) {// Se reporta el caso de transcritos con UTRs5p y no UTRs3p
-                cont_lects = reportarUTR5p(gene, hebra, cont_lects, salidaGTF, referenciaGlobalCoords, gen_ID, metaData, genInformation, numObjs, numIter, red);
+                cont_lects = reportarUTR5p(gene, hebra, cont_lects, salidaGTF, referenciaGlobalCoords, gen_ID, metaData, genInformation, numObjs, numIter, red, complementarios);
             }
             if (!utr5pdefined && utr3pdefined) {// Se reporta el caso de transcritos con UTRs5p y no UTRs3p
                 cont_lects = reportarUTR3p(gene, hebra, cont_lects, salidaGTF, referenciaGlobalCoords, gen_ID, metaData);
@@ -3451,7 +3451,7 @@ public class Analizer {
         return ref_mRNAs;
     }
 
-    public int reportarUTR5p(Gene gene, String hebra, int cont_lects, File salidaGTF, int referenciaGlobalCoords, String gen_ID, Utilities metaData, GenInformation genInformation, int numObjs, int numIter, String red) throws IOException, Exception {
+    public int reportarUTR5p(Gene gene, String hebra, int cont_lects, File salidaGTF, int referenciaGlobalCoords, String gen_ID, Utilities metaData, GenInformation genInformation, int numObjs, int numIter, String red, boolean complementarios) throws IOException, Exception {
 
         // Se imprimen los transcritos.
         int longExon, coordIniTrans, coordFinTrans, posicionIniExon, posicionFinExon, cuadratura = 0;
@@ -3584,31 +3584,34 @@ public class Analizer {
                     metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\texon\t" + (referenciaGlobalCoords - posicionFinExon) + "\t" + (referenciaGlobalCoords - posicionIniExon) + "\t.\t" + metaData.get_hebra() + "\t" + "." + "\t" + "ID=" + exonID + ";Name=" + exonID + ";Parent=" + mRNA_ID, salidaGTF);
                 }
             }
+            if (complementarios) {
+                String genID = metaData.get_GenID().get(0);
+                //String pathLocal = "salidas/estructuras" + "/" + red + "/" + genID;
+                String pathLocal = "salidas/estructuras";
+                File path = new File(pathLocal);
+                path.mkdir();
 
-            String genID = metaData.get_GenID().get(0);
-            //String pathLocal = "salidas/estructuras" + "/" + red + "/" + genID;
-            String pathLocal = "salidas/estructuras";
-            File path = new File(pathLocal);
-            path.mkdir();
+                String pathE = pathLocal + "/" + red;
+                File pathEst = new File(pathE);
+                pathEst.mkdir();
 
-            String pathE = pathLocal + "/" + red;
-            File pathEst = new File(pathE);
-            pathEst.mkdir();
+                String pathE1 = pathE + "/" + genID;
+                File pathEst1 = new File(pathE1);
+                pathEst1.mkdir();
 
-            String pathE1 = pathE + "/" + genID;
-            File pathEst1 = new File(pathE1);
-            pathEst1.mkdir();
+                String pathEstruc = pathE1 + "/" + utr5pFileAbtsID;
+                File pathEstructura = new File(pathEstruc);
+                pathEstructura.mkdir();
 
-            String pathEstruc = pathE1 + "/" + utr5pFileAbtsID;
-            File pathEstructura = new File(pathEstruc);
-            pathEstructura.mkdir();
+                String transFactFileID = pathEstructura + "/" + utr5pFileAbtsID + ".tf";
+                File transFTfileID = new File(transFactFileID);
+                transFTfileID.delete();
+                // Se mina el archivo de abstracts que describe los eventos de regulacion inherentes al UTR5p en proceso.
 
-            String transFactFileID = pathEstructura + "/" + utr5pFileAbtsID + ".tf";
-            File transFTfileID = new File(transFactFileID);
-            transFTfileID.delete();
-            // Se mina el archivo de abstracts que describe los eventos de regulacion inherentes al UTR5p en proceso.
-            this.listUTR5pHeader(metaData, gene, utr5p, gene.getStart().position, utr5pFileAbtsID, "5p", transFTfileID);
-            this.constructORFListAbts(metaData, genInformation, utr5p, gene, utr5pFileAbtsID, pathEstruc, numObjs, numIter);
+                this.listUTR5pHeader(metaData, gene, utr5p, gene.getStart().position, utr5pFileAbtsID, "5p", transFTfileID);
+                this.constructORFListAbts(metaData, genInformation, utr5p, gene, utr5pFileAbtsID, pathEstruc, numObjs, numIter);
+
+            }
         }
 
         ref_mRNAs = ref_mRNAs + ++contador_UTR5ps;
@@ -3673,7 +3676,7 @@ public class Analizer {
         }
 
         if (complementarios) {
-            
+
             String genID = metaData.get_GenID().get(0);
             //String pathLocal = "salidas/estructuras" + "/" + red + "/" + genID;
             String pathLocal = "salidas/estructuras";
@@ -3702,7 +3705,7 @@ public class Analizer {
             this.constructORFListAbts(metaData, genInformation, gene, gene, ORF_ID, pathEstruc, numObjs, numIter);
 
         }
-        
+
         contLecturas++;
         return contLecturas;
 
