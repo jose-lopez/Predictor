@@ -236,13 +236,26 @@ public class GenInformation {
 
     public void generaLects(String entrada, File gff3EnsemblEPDExt, File gff3Predictor, boolean iLPinr, boolean consensos, boolean reporteAbs, int numObjs, int numIter, boolean ilpClasificador, String red) throws IOException, Exception {
 
-        /*
-         List<Integer> atg = new ArrayList<>(Arrays.asList(2101));
-         List<Integer> gt = new ArrayList<>(Arrays.asList(2239));
-         List<Integer> ag = new ArrayList<>(Arrays.asList(3114));
-         List<Integer> stops = new ArrayList<>(Arrays.asList(3230, 3248, 3327, 3336, 3340, 3363, 3397, 3430));
+        /* Coordenadas VEGA y Ensembl SST
+         List<Integer> atg = new ArrayList<>(Arrays.asList(108));
+         List<Integer> gt = new ArrayList<>(Arrays.asList(246));
+         List<Integer> ag = new ArrayList<>(Arrays.asList(1121));
+         List<Integer> stops = new ArrayList<>(Arrays.asList(1334));
+         //*/
+        
+         /* Coordenadas VEGA y Ensembl SST + 2000 up and down
+         List<Integer> atg = new ArrayList<>(Arrays.asList(2108));
+         List<Integer> gt = new ArrayList<>(Arrays.asList(2246));
+         List<Integer> ag = new ArrayList<>(Arrays.asList(3121));
+         List<Integer> stops = new ArrayList<>(Arrays.asList(3334));
          //*/
 
+         /* Coordenadas vector juguete
+         List<Integer> atg = new ArrayList<>(Arrays.asList(5));
+         List<Integer> gt = new ArrayList<>(Arrays.asList(23));
+         List<Integer> ag = new ArrayList<>(Arrays.asList(38));
+         List<Integer> stops = new ArrayList<>(Arrays.asList(56));
+         //*/
 
         /*
          List<Integer> atg = new ArrayList<>(Arrays.asList(1721,2101,2749));
@@ -312,9 +325,9 @@ public class GenInformation {
         // Descomentar para trabajar con prolog.*/
         GeneConstructor constructor = analizer.getConstructor(); // Se puede acceder a las predicciones.
 
-        analizer.constructLectures(false); //Se construyen las lecturas (true metodo recursivo, false interactivo).
+        analizer.constructLectures(false); //Se construyen las lecturas (true metodo recursivo, false interativo).
 
-        //System.out.println("" + analizer.toString()); // Se imprimen en consola todos los intrones y exones hallados.
+        System.out.println("" + analizer.toString()); // Se imprimen en consola todos los intrones y exones hallados.
 
         if (!analizer.getLectures().isEmpty()) {
 
@@ -324,10 +337,10 @@ public class GenInformation {
                 analizer.constructRegionUTR5p(metaDataGen, this, iLPinr, consensos); // pasar iLPinr = false implica que se proponen TSSs por consensos.
             }
             //analizer.constructRegionUTR3p(metaDataGen, this, false);
+            
+            analizer.lectsEnsemblEpd(metaDataGen, gff3EnsemblEPDExt, reporteAbs, this);
 
             analizer.lectsToGFF3(metaDataGen, gff3Predictor, reporteAbs, this, numObjs, numIter, red, this.isComplementarios());
-
-            analizer.lectsEnsemblEpd(metaDataGen, gff3EnsemblEPDExt, reporteAbs, this);
 
             metaDataGen.guardar("\n", gff3Predictor);
 

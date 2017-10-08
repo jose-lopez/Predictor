@@ -3629,7 +3629,7 @@ public class Analizer {
 
         // Se imprime cabecera de la lectura o mRNA.
         coordIniTrans = gene.getStart().position;
-        coordFinTrans = gene.getEnd().position;
+        coordFinTrans = gene.getEnd().position + 1;
 
         if (hebra.equals("+")) {
             metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tgene\t" + (coordIniTrans + referenciaGlobalCoords + 1) + "\t" + (coordFinTrans + referenciaGlobalCoords + 1) + "\t.\t" + metaData.get_hebra() + "\t.\tID=" + gen_ID + ";Name=" + gen_ID, salidaGTF);
