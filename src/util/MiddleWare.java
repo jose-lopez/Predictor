@@ -59,7 +59,7 @@ public class MiddleWare {
     private static final String tssConsult = "region_tss(RegionTSS), p_atgs(RegionTSS, CoordsTSS, R, 0)";
     private static final String ttsConsult = "region_tts(RegionTTS), p_pars(RegionTTS, CoordsTTS, R, 0)";
     private static final String poliAsConsult = "region_polA(RegionPoliA), coords_poli_A(RegionPoliA, CoordsPoliA, R).";
-    private static final String regexCleaner = "[^\\d\\w ]";
+    private static final String regexCleaner = "[^\\d\\w ]";    
     //  </editor-fold>
 
     //---------------------------Public Methods--------------------------------- 
@@ -462,6 +462,19 @@ public class MiddleWare {
         return coords;
 
     }
+    
+    //---------------------------------------
+    /**
+     * Define el listado de sitios de GT usando clasificador Weka
+     */
+    public ArrayList<Object> getTSSPositionsClasificador(int sitio, int modelo, String rutaSecuencia, int limI, int limS, double umbral) throws Exception {
+
+        Clasificador clasificador = new Clasificador(sitio, modelo, rutaSecuencia, limI, limS, umbral);
+
+        ArrayList<Object> predicciones = clasificador.clasificador();
+
+        return predicciones;
+    }
 
     //---------------------------------------
     public List<Integer> getAtgPositions() {
@@ -505,13 +518,13 @@ public class MiddleWare {
     /**
      * Define el listado de sitios de GT usando clasificador Weka
      */
-    public List<Integer> getGtPositionsClasificador(int sitio, int modelo, String rutaSecuencia) throws Exception {
+    public ArrayList<Object> getGtPositionsClasificador(int sitio, int modelo, String rutaSecuencia, int limI, int limS, double umbral) throws Exception {
 
-        Clasificador clasificador = new Clasificador(sitio, modelo, rutaSecuencia);
+        Clasificador clasificador = new Clasificador(sitio, modelo, rutaSecuencia, limI, limS, umbral);
 
-        List<Integer> coordsGTs = clasificador.clasificador();
+        ArrayList<Object> prediccionesGT = clasificador.clasificador();
 
-        return coordsGTs;
+        return prediccionesGT;
     }
 
     //---------------------------------------
@@ -560,16 +573,19 @@ public class MiddleWare {
     /**
      * Define el listado de sitios de GT usando clasificador Weka
      */
-    public List<Integer> getAGPositionsClasificador(int sitio, int modelo, String rutaSecuencia) throws Exception {
+    public ArrayList<Object> getAGPositionsClasificador(int sitio, int modelo, String rutaSecuencia, int limI, int limS, double umbral) throws Exception {
 
-        Clasificador clasificador = new Clasificador(sitio, modelo, rutaSecuencia);
+        Clasificador clasificador = new Clasificador(sitio, modelo, rutaSecuencia, limI, limS, umbral);
 
-        List<Integer> coordsAGs = new Clasificador(sitio, modelo, rutaSecuencia).clasificador();
+        ArrayList<Object> predicciones = clasificador.clasificador();
 
-        return coordsAGs;
+        return predicciones;
     }
 
     //---------------------------------------
+    
+    
+       
     //---------------------------------------
     /**
      * Define el listado de sitios de GT usando predictor ILP.
@@ -610,6 +626,20 @@ public class MiddleWare {
         }
 
         return new ArrayList<>();
+    }
+    
+    
+    //---------------------------------------
+    /**
+     * Define el listado de sitios de GT usando clasificador Weka
+     */
+    public ArrayList<Object> getTTSPositionsClasificador(int sitio, int modelo, String rutaSecuencia, int limI, int limS, double umbral) throws Exception {
+
+        Clasificador clasificador = new Clasificador(sitio, modelo, rutaSecuencia, limI, limS, umbral);
+
+        ArrayList<Object> predicciones = clasificador.clasificador();
+
+        return predicciones;
     }
 
     //---------------------------------------

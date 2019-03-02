@@ -35,7 +35,7 @@ public interface Model {
     public final int minIntron = 64;
     public final int maxExon = 1000;
     public final int minExon = 100;
-    public final int minUTR5p = 50;
+    public final int minUTR5p = 10;
     public final int maxUTR5p = 1000;
     public final int limInfRegionPromo = 1000;
     public final int limSupRegionPromo = 800;

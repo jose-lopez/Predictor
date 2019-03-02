@@ -39,10 +39,20 @@ public class GeneConstructor {
     // <editor-fold desc="Private Attributes">
 //---------- listas de inicio, como indices referentes a la informacion que se encuentra en gendata---------------------------------
 
-    private List<Integer> atg;
+    private List<Integer> atg;    
     private List<Integer> gt;
+    ArrayList<Double> distPosGt = new ArrayList<>();
     private List<Integer> ag;
+    ArrayList<Double> distPosAg = new ArrayList<>();
     private List<Integer> stops; //Pueden ser: taa, tag o tga. Se guardan sus posiciones.
+    private List<Integer> tss;
+    ArrayList<Double> distPosTss = new ArrayList<>();
+    private List<Integer> tts;
+    ArrayList<Double> distPosTts = new ArrayList<>();
+    private ArrayList<Object> prediccionesTss;
+    private ArrayList<Object> prediccionesGt;
+    private ArrayList<Object> prediccionesAg;
+    private ArrayList<Object> prediccionesTts;
     //---------------------------------------
     private List<Information> geneData;
     //---------------------------------------
@@ -104,23 +114,32 @@ public class GeneConstructor {
      * obtendran los valores que este devuelve como entrada para generar las
      * listas internas
      */
-    public GeneConstructor(MiddleWare middleWare, boolean ilpClasificador, List<String> data , String rutaSecuencia,String secuencia) throws Exception {
+    public GeneConstructor(MiddleWare middleWare, boolean ilpClasificador, List<String> data, String rutaSecuencia, String secuencia) throws Exception {
 
         if (ilpClasificador) {
-            this.initLists(middleWare.getAtgPositions(),
+            /*this.initLists(middleWare.getAtgPositions(),
                     middleWare.getGtPositions(),
                     middleWare.getAgPositions(),
                     middleWare.getParadasPositions(),
-                    middleWare.getGenData());
-        }else{
+                    middleWare.getGenData());*/
+        } else {
             
-            
-            List<Integer> gts =  middleWare.getGtPositionsClasificador(0, 1, rutaSecuencia);
-            List<Integer> ags =  middleWare.getAGPositionsClasificador(1, 1, rutaSecuencia);
+            prediccionesGt = middleWare.getGtPositionsClasificador(0, 3, rutaSecuencia, 5, 5, 0.85);
+            prediccionesAg = middleWare.getAGPositionsClasificador(1, 3, rutaSecuencia, 100, 5, 0.75);
+            prediccionesTss = middleWare.getTSSPositionsClasificador(3, 3, rutaSecuencia, 500, 200, 0.9999896640699297);
+            prediccionesTts = middleWare.getTTSPositionsClasificador(2, 3, rutaSecuencia, 50, 200, 0.9999896640699297);
             List<Integer> atgs = middleWare.getPositionsPatron(secuencia, true);
             List<Integer> stopss = middleWare.getPositionsPatron(secuencia, false);
-            this.initLists(atgs, gts, ags, stopss, middleWare.getGenData());
+            List<Integer> gts = (List<Integer>)prediccionesGt.get(0);
+            distPosGt = (ArrayList<Double>)prediccionesGt.get(1);
+            List<Integer> ags = (List<Integer>)prediccionesAg.get(0);
+            distPosAg = (ArrayList<Double>)prediccionesAg.get(1);
+            List<Integer> tss = (List<Integer>)prediccionesTss.get(0);
+            distPosTss = (ArrayList<Double>)prediccionesTss.get(1);
+            List<Integer> tts = (List<Integer>)prediccionesTts.get(0);
+            distPosTts = (ArrayList<Double>)prediccionesTts.get(1);
             
+            this.initLists(atgs, gts, ags, stopss, tss, tts, middleWare.getGenData());
         }
 
         this.isCompatibleGene();
@@ -298,10 +317,12 @@ public class GeneConstructor {
      * usarlo si se esta en el mismo paquete que esta clase, por lo que se
      * recomienda usar en lugar de esto los constructores
      */
-    void initLists(List<Integer> atg, List<Integer> gt, List<Integer> ag, List<Integer> stops, List<String> data) throws Exception {
+    void initLists(List<Integer> atg, List<Integer> gt, List<Integer> ag, List<Integer> stops, List<Integer> tss, List<Integer> tts, List<String> data) throws Exception {
         this.atg = atg;
         this.gt = gt;
         this.ag = ag;
+        this.tss = tss;
+        this.tts = tts;
         //this.gt = new ArrayList<>();
         //this.ag = new ArrayList<>();
         //this.stops = new ArrayList<>();

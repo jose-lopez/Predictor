@@ -101,9 +101,9 @@ public class Analizer {
      * que se estan recibiendo, donde la data es una simple lista de String y
      * las demas son listas de Integer
      */
-    public void readFromLists(List<Integer> atg, List<Integer> gt, List<Integer> ag, List<Integer> stops, List<String> data) throws Exception {
+    public void readFromLists(List<Integer> atg, List<Integer> gt, List<Integer> ag, List<Integer> stops, List<Integer> tss, List<Integer> tts, List<String> data) throws Exception {
         this.constructor = new GeneConstructor();
-        this.constructor.initLists(atg, gt, ag, stops, data);
+        this.constructor.initLists(atg, gt, ag, stops, tss, tts, data);
         this.constructor.isCompatibleGene();
     }
 
@@ -323,8 +323,6 @@ public class Analizer {
             // Se invoca al pipeline quien devuelve la region con el promotor propuesto para la secuencia problema.
             // El promotor es una coleccion de motivos, cada uno con la coleccion de factores de transcripcion
             // que le reconocen. Alli deben estar los factores que definen un core promoter.
-
-
             // En el array corePromoters estan los promotores que estan del lado izquierdo de la caja TATA y que la 
             // incluyen (cis promoters).
             Region regionPromotora = new Region(regionAdnUTR5p);
@@ -405,7 +403,7 @@ public class Analizer {
                             }
 
                             // Se asigna UTRs5p al core promoter en curso para lectura.
-                            // && !coordsTSS.contains(coordTSSp1EPD)
+                            // 
                             if (!coordsTSS.contains(coordTSS)) {
                                 utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, corePromoter);
                                 coordsTSS.add(coordTSS);
@@ -436,68 +434,66 @@ public class Analizer {
                                 coordTSS = motivoInrDPE.getCoordenadas()[0] + 2;
                                 minUTR5p = inicioATG.position - coordTSS;
                                 core = motivoInrDPE.getCore();
-                            }
 
-                            if (motivoInrDPE != null && (minUTR5p >= Model.minUTR5p) && (minUTR5p <= Model.maxUTR5p)) {
+                                if ((minUTR5p >= Model.minUTR5p) && (minUTR5p <= Model.maxUTR5p)) {
 
-                                //motivoInrDPE.setCore("Inr");
-                                corePromoter.add(motivoInrDPE);
-                                corePromotersInr.add(corePromoter);
+                                    //motivoInrDPE.setCore("Inr");
+                                    corePromoter.add(motivoInrDPE);
+                                    corePromotersInr.add(corePromoter);
 
-                                System.out.println("El Gen " + metaData.get_GenID().get(0) + " posee caja Inr en coordenada: " + coordTSS);
+                                    System.out.println("El Gen " + metaData.get_GenID().get(0) + " posee caja Inr en coordenada: " + coordTSS);
 
-                                // Se define motivo DPE para el core promoter en curso.
-                                motivoDPE = definirCoordInrDPETSS(corePromoter, posiblesMotivosInrDPE, false);
+                                    // Se define motivo DPE para el core promoter en curso.
+                                    motivoDPE = definirCoordInrDPETSS(corePromoter, posiblesMotivosInrDPE, false);
 
-                                if (motivoDPE != null) {
-                                    //motivoDPE.setCore("DPE");
-                                    corePromoter.add(motivoDPE);
-                                    corePromotersInrDPE.add(corePromoter);
-                                    System.out.println("El Gen " + metaData.get_GenID().get(0) + " posee caja DPE en coordenada: " + motivoDPE.getCoordenadas()[0]);
+                                    if (motivoDPE != null) {
+                                        //motivoDPE.setCore("DPE");
+                                        corePromoter.add(motivoDPE);
+                                        corePromotersInrDPE.add(corePromoter);
+                                        System.out.println("El Gen " + metaData.get_GenID().get(0) + " posee caja DPE en coordenada: " + motivoDPE.getCoordenadas()[0]);
+                                    }
+
+                                    // Se asigna UTRs5p al core promoter en curso para lectura.
+                                    // && !coordsTSS.contains(coordTSSp1EPD)
+                                    utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, corePromoter);
+                                    coordsTSS.add(coordTSS);
                                 }
-
-                                // Se asigna UTRs5p al core promoter en curso para lectura.
-                                // && !coordsTSS.contains(coordTSSp1EPD)
-                                utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, corePromoter);
-                                coordsTSS.add(coordTSS);
 
                             } else {
 
                                 motivoDPE = definirCoordInrDPETSS(corePromoter, posiblesMotivosInrDPE, false);
                                 if (motivoDPE != null) {
-                                    coordTSS = motivoDPE.getCoordenadas()[0] - 26;
-                                    minUTR5p = inicioATG.position - coordTSS;
-                                    core = "DPE";
-                                }
+                                    //********
+                                    coordTSS = motivoDPE.getCoordenadas()[0] - 26; // Se asigna coordTSS desde clasificador
+                                    minUTR5p = inicioATG.position - coordTSS;      // entre coord del DPE y la del ATG
+                                    core = "DPE";                                  // pasando las coordenadas de ambos.
+                                    //********
 
-                                if ((motivoDPE != null) && (minUTR5p >= Model.minUTR5p) && (minUTR5p <= Model.maxUTR5p)) {
-                                    motivoDPE.setCore("DPE");
-                                    corePromoter.add(motivoDPE);
-                                    corePromotersInrDPE.add(corePromoter);
-                                    System.out.println("El Gen " + metaData.get_GenID().get(0) + " posee caja DPE en coordenada: " + motivoDPE.getCoordenadas()[0]);
-
-                                    utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, corePromoter);
-                                    coordsTSS.add(coordTSS);
-
-                                } else {
-
-                                    // Asignar UTR con la caja mas a la deredcha del corepromoter sin atender TSS por ahora
-                                    sizeCorePromoter = corePromoter.size();
-                                    coordTSS = corePromoter.get(sizeCorePromoter - 1).getCoordenadas()[1];
-                                    int distUTR5p = inicioATG.position - coordTSS;
-                                    if ((distUTR5p >= Model.minUTR5p) && (distUTR5p <= Model.maxUTR5p)) {
+                                    if ((minUTR5p >= Model.minUTR5p) && (minUTR5p <= Model.maxUTR5p)) {
+                                        motivoDPE.setCore("DPE");
+                                        corePromoter.add(motivoDPE);
+                                        corePromotersInrDPE.add(corePromoter);
+                                        System.out.println("El Gen " + metaData.get_GenID().get(0) + " posee caja DPE en coordenada: " + motivoDPE.getCoordenadas()[0]);
 
                                         utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, corePromoter);
                                         coordsTSS.add(coordTSS);
-
                                     }
+
                                 }
                             }
 
-                        } else {
+                        } else { // Aqui se aplicaran modelos para asignar TSS delante del core promoter y antes del ATG
+
                             if (coordTSS == 0) {
-                                //sizeCorePromoter = corePromoter.size();
-                                //coordTSS = corePromoter.get(sizeCorePromoter - 1).getCoordenadas()[1];
+                                
+                                //***************
+                                /*
+                                Para asignar coordTSS se empleara metodo que reciba el motivo mas a la derecha
+                                del corepromoter y la coordenada del ATG y, entre ambas, se asignara el mejor TSS segun los TSS
+                                ya disponibles desde el clasificador. El metodo recibira la coordenada de cierre en la exploracion
+                                y si se debe elegir por ATG o DPE.                                
+                                */
+                                
                                 if (core.equals("GC") || core.equals("CAAT")) {
                                     coordTSS = motivoSup.getCoordenadas()[0] + 100;
                                 }
@@ -539,7 +535,6 @@ public class Analizer {
         int iniRegionPromo, finRegionProm;
 
         //System.out.println("inicioUTR5p:" + inicioUTR5p.position);
-
         iniRegionPromo = inicioUTR5p.position - Model.limInfRegionPromo;
         finRegionProm = inicioUTR5p.position + Model.limSupRegionPromo;
         Information coordIniRegPromo;
@@ -552,7 +547,6 @@ public class Analizer {
         }
 
         Information coordATG = gene.getStart();
-
 
         if (finRegionProm > coordATG.position) {
             coordFinRegPromo = coordATG;
@@ -719,7 +713,6 @@ public class Analizer {
 
         }
 
-
     }
 
     /**
@@ -794,18 +787,13 @@ public class Analizer {
             // Se invoca al pipeline quien devuelve la region con el promotor propuesto para la secuencia problema.
             // El promotor es una coleccion de motivos, cada uno con la coleccion de factores de transcripcion
             // que le reconocen. Alli deben estar los factores que definen un core promoter.
-            BioPattern pipeline = new BioPattern(regionAdnUTR3p, regionAdnUTR3p);
-            Region regionUTR3p = pipeline.pipelineBioPatternRP("regionUTR3p.txt", "0.99", 0, 0);
+            Region regionPromotora = new Region(regionAdnUTR3p);
+
+            regionPromotora.constructPromotorConsensos(regionAdnUTR3p, false); // Falta agregar que se detecten cajas DSE      
 
             // En el array corePromoters estan los promotores que estan del lado izquierdo de la caja TATA y que la 
             // incluyen (cis promoters).
-            ArrayList<ArrayList<Motivo>> uTR3pCorePromoters = definirUTR3p_CorePromoters(regionUTR3p, false, metaData);
-
-            if (uTR3pCorePromoters.isEmpty()) {
-
-                regionUTR3p.constructPromotorConsensos(regionAdnUTR3p, false);//  False construye promotor para region UTR3p.
-                uTR3pCorePromoters = definirUTR3p_CorePromoters(regionUTR3p, true, metaData);
-            }
+            ArrayList<ArrayList<Motivo>> uTR3pCorePromoters = definirUTR3p_CorePromoters(regionPromotora, true, metaData);
 
             ArrayList<ArrayList<Motivo>> corePromotersDSE = new ArrayList<>();
 
@@ -814,7 +802,7 @@ public class Analizer {
 
             ArrayList<Motivo> posiblesMotivosDSE = new ArrayList<>();
 
-            for (Motivo m : regionUTR3p.getPromotor()) {
+            for (Motivo m : regionPromotora.getPromotor()) {
 
                 for (factorTranscripcion ft : m.getFactores()) {
 
@@ -1350,10 +1338,11 @@ public class Analizer {
         if (coordCA != -1) {
             coordCA = coordCA + coordSupCorePromoter;
 
+        } else {
+            coordCA = 50 + coordSupCorePromoter; // La mas pobre de las posibilidades.
         }
 
-        //return coordCA;
-        return coordCA = 50 + coordSupCorePromoter;
+        return coordCA;
 
     }
 
@@ -2641,8 +2630,6 @@ public class Analizer {
             }
         }
 
-
-
         return mixedIntrons;
     }
 
@@ -3001,7 +2988,6 @@ public class Analizer {
             }
 
             //this.constructORFListAbts(metaData, genInformation, gene, gene.getStart().position, gen_ID);
-
         }
 
     }
@@ -3192,7 +3178,6 @@ public class Analizer {
 
         // Se mina el archivos de abstracts que describe los eventos de regulacion inherentes al UTR5p en proceso.
         //this.constructORFListAbts(metaData, genInformation, gene, gene.getStart().position, gen_ID);
-
         return ref_mRNAs;
 
     }
@@ -3698,7 +3683,6 @@ public class Analizer {
             String transFactFileID = pathEstructura + "/" + ORF_ID + ".tf";
             File transFTfileID = new File(transFactFileID);
             transFTfileID.delete();
-
 
             // Se mina el archivos de abstracts que describe los eventos de regulacion inherentes al UTR5p en proceso.
             this.listUTR5pHeader(metaData, gene, gene, gene.getStart().position, ORF_ID, "CDS", transFTfileID);
