@@ -236,7 +236,7 @@ public class GenInformation {
 
     public void generaLects(String entrada, File gff3EnsemblEPDExt, File gff3Predictor, boolean iLPinr, boolean consensos, boolean reporteAbs, int numObjs, int numIter, boolean ilpClasificador, String red) throws IOException, Exception {
 
-        //* Coordenadas VEGA y Ensembl SST
+        /* Coordenadas VEGA y Ensembl SST
          List<Integer> atg = new ArrayList<>(Arrays.asList(108));
          List<Integer> gt = new ArrayList<>(Arrays.asList(246));
          List<Integer> ag = new ArrayList<>(Arrays.asList(1121));
@@ -321,7 +321,7 @@ public class GenInformation {
             System.out.println("Numero de ORFs: " + analizer.getLectures().size());
 
             if (this.isGT()) {
-                analizer.constructRegionUTR5p(metaDataGen, this, iLPinr, consensos); // pasar iLPinr = false implica que se proponen TSSs por consensos.
+                analizer.constructRegionUTR5p(metaDataGen, this, iLPinr, consensos, constructor); // pasar iLPinr = false implica que se proponen TSSs por consensos.
                 //analizer.constructRegionUTR3p(metaDataGen, this, false);
             }            
             

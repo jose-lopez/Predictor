@@ -126,7 +126,7 @@ public class GeneConstructor {
             
             prediccionesGt = middleWare.getGtPositionsClasificador(0, 3, rutaSecuencia, 5, 5, 0.85);
             prediccionesAg = middleWare.getAGPositionsClasificador(1, 3, rutaSecuencia, 100, 5, 0.75);
-            prediccionesTss = middleWare.getTSSPositionsClasificador(3, 3, rutaSecuencia, 500, 200, 0.9999896640699297);
+            prediccionesTss = middleWare.getTSSPositionsClasificador(3, 3, rutaSecuencia, 500, 200, 0.75);
             prediccionesTts = middleWare.getTTSPositionsClasificador(2, 3, rutaSecuencia, 50, 200, 0.9999896640699297);
             List<Integer> atgs = middleWare.getPositionsPatron(secuencia, true);
             List<Integer> stopss = middleWare.getPositionsPatron(secuencia, false);
@@ -175,6 +175,30 @@ public class GeneConstructor {
     // <editor-fold defaultstate="collapsed" desc="Getters">
     public List<Integer> getAtg() {
         return atg;
+    }
+
+    public ArrayList<Double> getDistPosGt() {
+        return distPosGt;
+    }
+
+    public ArrayList<Double> getDistPosAg() {
+        return distPosAg;
+    }
+
+    public List<Integer> getTss() {
+        return tss;
+    }
+
+    public ArrayList<Double> getDistPosTss() {
+        return distPosTss;
+    }
+
+    public List<Integer> getTts() {
+        return tts;
+    }
+
+    public ArrayList<Double> getDistPosTts() {
+        return distPosTts;
     }
 
     //---------------------------------------

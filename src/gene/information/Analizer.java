@@ -1,4 +1,4 @@
- /*
+/*
  Analizer.java
  Clase enfocada en el analisis de un objeto GeneConstructor para la formacion
  de lecturas(genes) validos, que son asociadas a una lista llamada "lectures"
@@ -214,93 +214,102 @@ public class Analizer {
         // Se ajustan las coordenadas para efectos de reporte.
     }
 
+    //---------------------------------------
     /**
-     * Metodo usado para la construccion de lecturas, al llamar este metodo, se
-     * analizaran las listas del GeneConstructor y se llenara la lista de
-     * genes(lectures) con todas las lecturas validas, este metodo recibe un
-     * boolean que indica si las combinaciones se haran usando un metodo
-     * recursivo (true) o iterativo (false)
+     * Metodo usado para instanciar el GeneConstructor a partir de las listas
+     * que se estan recibiendo, donde la data es una simple lista de String y
+     * las demas son listas de Integer
+     *
+     * @throws java.lang.Exception
      */
-    /*
-     public void constructLectures(boolean recursively) throws Exception {
-     if (constructor.isCompatibleGene()) {
+    public Integer definirTSS(Motivo motivoSup, Integer inicioATG, GeneConstructor constructor) throws Exception {
 
-     if ((!constructor.getAtg().isEmpty() && !constructor.getStops().isEmpty())) {
+        Integer TSS = 0;
+        int barrido = -1, distMin, distMax;
+        boolean exploracion = true;
+        double mayorProbTSS = 0.0;
 
-     for (Integer atg : constructor.getAtg()) {
-     for (Integer stop : constructor.getStops()) {
+        int motivoSupCoordenadas = motivoSup.getCoordenadas()[1];
+        String core = motivoSup.getCore();
 
-     if ((stop.intValue() - atg.intValue() + 1) > Model.minExon) {
+        List<Integer> tss = constructor.getTss();
+        ArrayList<Double> distPosTss = constructor.getDistPosTss();
 
-     Information start = constructor.getData(atg);
-     Information end;
-     String stopS;
-     String atgS = constructor.getData(atg).toString() + constructor.getData(atg.intValue() + 1).toString() + constructor.getData(atg.intValue() + 2).toString();
-     if (!(stop.intValue() == constructor.lastData())) {
-     end = constructor.getData(stop.intValue() + 2);
-     stopS = constructor.getData(stop).toString() + constructor.getData(stop.intValue() + 1).toString() + constructor.getData(stop.intValue() + 2).toString();
+        switch (core.toLowerCase()) {
 
-     } else {
-     end = constructor.getData(constructor.lastData());
-     stopS = constructor.getData(stop.intValue() - 2).toString() + constructor.getData(stop.intValue() - 1).toString() + constructor.getData(stop).toString();
+            case "caat":
+                distMin = 120;
+                distMax = 140;
+                break;
 
-     }
+            case "gc":
+                distMin = 120;
+                distMax = 140;
+                break;
 
-     Gene gene = new Gene(start, end);
-     gene.addExon(new Exon(start, end, constructor.getInnerInfo((start.position + 1), end.position)));
-     //gene.getExon(0).getData();
-     //String geneS = gene.toString();
+            case "bre":
+                distMin = 25;
+                distMax = 500;
+                break;
 
-     int LongCuadratura = end.position - start.position + 1;
-     int cuadraturaExon = LongCuadratura % 3;
+            case "tata":
+                distMin = 20;
+                distMax = 40;
+                break;
 
-     if (atgS.equals("atg") && (stopS.equals("taa") || stopS.equals("tag") || stopS.equals("tga"))) {
-     if ((cuadraturaExon == 0) && gene.exonsTripletCheck()) {
-     this.lectures.add(gene);
-     }
-     }
-     }
+            case "inr-tata-like":
+                distMin = 20;
+                distMax = 40;
+                break;
 
-     }
-     }
+            default:
+                distMin = 0;
+                distMax = 0;
+                break;
+        }
 
-     if ((!constructor.getGt().isEmpty() && !constructor.getAg().isEmpty())) {
-     //en este punto, las 4 listas estan llenas y debo hacer las iteraciones
-     Gene possibilities = getPosibilities(); // Se generan todos los intrones posibles y se guardan en un gen temporal.
+        for (Integer posicion : constructor.getTss()) {
 
-     if (!possibilities.getIntrons().isEmpty()) {
-     ArrayDeque<ArrayDeque<Intron>> mixedIntrons; // Se crea una cola que contendra colas de intrones y cada cola 
-     // correspondera a una lectura posible expresada como secuencia de intrones..
+            do {
+                barrido++;
+            } while ((motivoSupCoordenadas + distMin) > posicion);
 
-     if (recursively) {
-     mixedIntrons = this.recursivelyMix(possibilities);
-     } else {
-     mixedIntrons = this.iterativeMix(possibilities);
-     }
+            break;
 
-     if (!mixedIntrons.isEmpty()) {
-     this.generateLectures(mixedIntrons);
-     } else {
-     System.out.println("La secuencia no contiene Intrones, no hay lecturas que reportar");
-     }
+            /*
+            while ((motivoSupCoordenadas + distMin) > posicion) {
+                barrido = barrido + posicion;
+            }
+            break;
+             */
+        }
 
-     } else {
-     throw new Exception("La secuencia que se intenta analizar no contiene intrones y no es un unico exon");
-     }
-     }
+        while (exploracion) {
 
-     } else {
-     throw new Exception("La secuencia que se intenta analizar no contiene suficientes coordenadas");
-     }
-     }
-     }
-     //*/
+            if ((tss.get(barrido) <= (motivoSupCoordenadas + distMax)) && (inicioATG - tss.get(barrido) >= Model.minUTR5p)) {
+
+                if (distPosTss.get(barrido) > mayorProbTSS) {
+                    mayorProbTSS = distPosTss.get(barrido);
+                    TSS = tss.get(barrido);                    
+                }
+                
+                barrido++;
+
+            } else {
+                exploracion = false;
+            }
+
+        }
+
+        return TSS;
+    }
+
     /**
      * Metodo usado para la construccion de Regiones 5' para transcrito en
      * proceso. Ya se tiene un ORF y se desea completar el transcrito
      * correspondiente.
      */
-    public boolean constructRegionUTR5p(Utilities metaData, GenInformation genInformation, boolean inrILP, boolean consensos) throws Exception {
+    public boolean constructRegionUTR5p(Utilities metaData, GenInformation genInformation, boolean inrILP, boolean consensos, GeneConstructor constructor) throws Exception {
 
         boolean utr5pDefined = false;
         ArrayList<Integer> coordsTSS = new ArrayList<>();
@@ -330,7 +339,7 @@ public class Analizer {
             ArrayList<ArrayList<Motivo>> corePromotersInr = new ArrayList<>();
             ArrayList<ArrayList<Motivo>> corePromotersInrDPE = new ArrayList<>();
 
-            if (consensos) { // Si consensos = true, se construye core promoters por consensos.
+            if (consensos) { // Si consensos = true, se construye region promotora por consensos.
                 regionPromotora.constructPromotorConsensos(regionAdnUTR5p, true);//  False construye promotor para region UTR3p.
 
             } else {
@@ -361,15 +370,14 @@ public class Analizer {
 
             }
 
-            int distanciaMinInr_DPE = 28;
-            int distanciaMaxInr_DPE = 32;
-
-            int sizeCorePromoter;
-
+            //int distanciaMinInr_DPE = 28;
+            //int distanciaMaxInr_DPE = 32;
+            //int sizeCorePromoter;
             if (!corePromoters.isEmpty()) {
                 int coordTSS;
                 for (ArrayList<Motivo> corePromoter : corePromoters) {// Que pasa si no hay core promoter?:
                     // Se invoca al predictor para que proponga TSS.
+
                     coordTSS = 0;
                     if (inrILP) {
                         utr5pDefined = false;
@@ -390,45 +398,56 @@ public class Analizer {
                         String core = motivoSup.getCore();
 
                         if (motivoSup.getCore().equals("Inr-tata-like")) {
-                            motivoInrDPE = motivoSup;
-                            coordTSS = motivoInrDPE.getCoordenadas()[0] + 2;
 
+                            motivoInrDPE = motivoSup;
+                            coordTSS = definirTSS(motivoSup, inicioATG.position, constructor);
+
+                            //coordTSS = motivoInrDPE.getCoordenadas()[0] + 2;
                             motivoDPE = definirCoordInrDPETSS(corePromoter, posiblesMotivosInrDPE, false);
 
                             if (motivoDPE != null) {
-                                motivoDPE.setCore("DPE");
-                                corePromoter.add(motivoDPE);
-                                corePromotersInrDPE.add(corePromoter);
-                                System.out.println("El Gen " + metaData.get_GenID().get(0) + " posee caja DPE en coordenada: " + motivoDPE.getCoordenadas()[0]);
+                                if (motivoDPE.getCoordenadas()[1] > (coordTSS + 20)) {
+                                    motivoDPE.setCore("DPE");
+                                    corePromoter.add(motivoDPE);
+                                    corePromotersInrDPE.add(corePromoter);
+                                    System.out.println("El Gen " + metaData.get_GenID().get(0) + " posee caja DPE en coordenada: " + motivoDPE.getCoordenadas()[0]);
+                                }
                             }
 
                             // Se asigna UTRs5p al core promoter en curso para lectura.
                             // 
+                            if (!coordsTSS.contains(coordTSS)) { //!!!! Ojo si se pueden repetir TSSs si hay diferentes TTSs
+                                utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, corePromoter);
+                                coordsTSS.add(coordTSS);
+                            }
+
+                        } else if (motivoSup.getCore().equals("DPE-tata-like")) {
+
+                            /*
+                                La coordenada TSS debe determinarse entre el motivo "DPE-tata-like" y el inicio del ORF. Tambien
+                                podria explorarse otro posible DPE aguas arriba y entre estos dos hallar el mejor TSS.
+                                El metodo recibira la coordenada superior del corepromoter mas a la derecha, el limite inferior
+                                y superior para realizar la exploracion del posible TSS y la lista de psosibles TSSs hallados
+                                por el clasificador. El metodo devolvera el TSS masprobable en ese rango de posiciones.
+                                Tambien debe pasarse la coordenada del ATG para no asignar TSS mas alla de esa posicion.
+                             */
+                            coordTSS = definirTSS(motivoSup, inicioATG.position, constructor);
+
+                            motivoDPE = motivoSup;
+                            corePromoter.add(motivoDPE);
+                            corePromotersInrDPE.add(corePromoter);
+                            System.out.println("El Gen " + metaData.get_GenID().get(0) + " posee caja DPE en coordenada: " + motivoDPE.getCoordenadas()[0]);
                             if (!coordsTSS.contains(coordTSS)) {
                                 utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, corePromoter);
                                 coordsTSS.add(coordTSS);
                             }
 
-                        } else {
-                            if (motivoSup.getCore().equals("DPE-tata-like")) {
-
-                                coordTSS = motivoSup.getCoordenadas()[0] - 26;
-
-                                motivoDPE = motivoSup;
-                                corePromoter.add(motivoDPE);
-                                corePromotersInrDPE.add(corePromoter);
-                                System.out.println("El Gen " + metaData.get_GenID().get(0) + " posee caja DPE en coordenada: " + motivoDPE.getCoordenadas()[0]);
-                                if (!coordsTSS.contains(coordTSS)) {
-                                    utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, corePromoter);
-                                    coordsTSS.add(coordTSS);
-                                }
-
-                            }
                         }
 
                         if (!posiblesMotivosInrDPE.isEmpty() && (coordTSS == 0)) {
 
                             motivoInrDPE = definirCoordInrDPETSS(corePromoter, posiblesMotivosInrDPE, true);
+                            motivoInrDPE = null;
 
                             if (motivoInrDPE != null) {
                                 coordTSS = motivoInrDPE.getCoordenadas()[0] + 2;
@@ -462,13 +481,19 @@ public class Analizer {
                             } else {
 
                                 motivoDPE = definirCoordInrDPETSS(corePromoter, posiblesMotivosInrDPE, false);
+                                motivoDPE = null;
                                 if (motivoDPE != null) {
+
+                                    /*
+                                    La coordenada TSS debe determinarse entre el motivo "DPE-tata-like" y el inicio del ORF. Tambien
+                                    podria explorarse otro posible DPE aguas arriba y entre estos dos hallar el mejor Inr.
+                                     */
                                     //********
-                                    coordTSS = motivoDPE.getCoordenadas()[0] - 26; // Se asigna coordTSS desde clasificador
-                                    minUTR5p = inicioATG.position - coordTSS;      // entre coord del DPE y la del ATG
-                                    core = "DPE";                                  // pasando las coordenadas de ambos.
+                                    coordTSS = motivoDPE.getCoordenadas()[0] - 26;
                                     //********
 
+                                    minUTR5p = inicioATG.position - coordTSS;      // entre coord del DPE y la del ATG
+                                    core = "DPE";
                                     if ((minUTR5p >= Model.minUTR5p) && (minUTR5p <= Model.maxUTR5p)) {
                                         motivoDPE.setCore("DPE");
                                         corePromoter.add(motivoDPE);
@@ -479,37 +504,41 @@ public class Analizer {
                                         coordsTSS.add(coordTSS);
                                     }
 
-                                }
-                            }
+                                } else if (coordTSS == 0) {
 
-                        } else { // Aqui se aplicaran modelos para asignar TSS delante del core promoter y antes del ATG
-
-                            if (coordTSS == 0) {
-                                
-                                //***************
-                                /*
+                                    /*
+                                Dado que no hay Inr o DPE posibles, aqui se aplicaran modelos para asignar TSS 
+                                delante del core promoter y antes del ATG
                                 Para asignar coordTSS se empleara metodo que reciba el motivo mas a la derecha
                                 del corepromoter y la coordenada del ATG y, entre ambas, se asignara el mejor TSS segun los TSS
                                 ya disponibles desde el clasificador. El metodo recibira la coordenada de cierre en la exploracion
                                 y si se debe elegir por ATG o DPE.                                
-                                */
-                                
-                                if (core.equals("GC") || core.equals("CAAT")) {
-                                    coordTSS = motivoSup.getCoordenadas()[0] + 100;
+                                     */
+                                    coordTSS = definirTSS(motivoSup, inicioATG.position, constructor);
+                                    if (coordTSS != 0) {
+                                        int distUTR5p = inicioATG.position - coordTSS;
+                                        if ((distUTR5p >= Model.minUTR5p) && (distUTR5p <= Model.maxUTR5p)) {
+                                            utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, corePromoter);
+                                            coordsTSS.add(coordTSS);
+                                        }
+                                    }
+
                                 }
-                                if (core.equals("BRE")) {
-                                    coordTSS = motivoSup.getCoordenadas()[0] + 32;
-                                }
-                                if (core.equals("TATA") || core.equals("EIF4E-tata-like")) {
-                                    coordTSS = motivoSup.getCoordenadas()[0] + 25;
-                                }
-                                int distUTR5p = inicioATG.position - coordTSS;
-                                if ((distUTR5p >= Model.minUTR5p) && (distUTR5p <= Model.maxUTR5p)) {
-                                    //if (!coordsTSS.contains(coordTSSp1EPD)) {
-                                    utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, corePromoter);
-                                    coordsTSS.add(coordTSS);
-                                    // }
-                                }
+                            }
+
+                        } else if (coordTSS == 0) {  // Dado que no hay Inr o DPE posibles, aqui se aplicaran modelos para asignar TSS 
+                            // delante del core promoter y antes del ATG
+
+                            /*
+                                Para asignar coordTSS se empleara metodo que reciba el motivo mas a la derecha
+                                del corepromoter y la coordenada del ATG y, entre ambas, se asignara el mejor TSS segun los TSS
+                                ya disponibles desde el clasificador. El metodo recibira la coordenada de cierre en la exploracion
+                                y si se debe elegir por ATG o DPE.                                
+                             */
+                            int distUTR5p = inicioATG.position - coordTSS;
+                            if ((distUTR5p >= Model.minUTR5p) && (distUTR5p <= Model.maxUTR5p)) {
+                                utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, corePromoter);
+                                coordsTSS.add(coordTSS);
                             }
                         }
                     }
@@ -831,7 +860,8 @@ public class Analizer {
                          coordsTTS.add(coordTTS);
                          }
                          //coordsTSS.add(coordTTS);*/
-                    } else { // La coordenada TTS se define por transicion GC o distancia estadistica.
+                    } else // La coordenada TTS se define por transicion GC o distancia estadistica.
+                    {
                         if (!posiblesMotivosDSE.isEmpty()) {
 
                             Motivo motivoDSE = definirMotivoDSE(uTR3CorePromoter, posiblesMotivosDSE);
@@ -850,7 +880,6 @@ public class Analizer {
                                 }
                             }
                         }
-
                     }
                 }
             }/* else {
@@ -865,7 +894,7 @@ public class Analizer {
              }
 
              }*/
-            /*
+ /*
              List<Integer> coordsPoliA = this.definirCoordPoliA(regionExplorar);
 
              // Para cada coordenada de sitio de poliadenilacion, hacer:
@@ -911,7 +940,7 @@ public class Analizer {
          utrs5p = true;
 
          } else {*/
-        /*
+ /*
          Information inicioGen = constructor.getGeneData().get(1075);
          Information finGen = constructor.getGeneData().get(1235);
          //List<Information> genData = analizer.getLectures().get(0).getData();        
@@ -1043,12 +1072,8 @@ public class Analizer {
                 coordGobalTSS = coord_TSS + coordSupMotSup;
             }
 
-        } else {
-
-            if (coordSupMotSup == -1 && (!coordsTSS.isEmpty())) {
-                coordGobalTSS = coordsTSS.get(0);
-            }
-
+        } else if (coordSupMotSup == -1 && (!coordsTSS.isEmpty())) {
+            coordGobalTSS = coordsTSS.get(0);
         }
 
         return coordGobalTSS;
@@ -1130,10 +1155,8 @@ public class Analizer {
                 coordTTSGlobal = coord_TTS + stopRef + coordSupMotSup;
             }
 
-        } else {
-            if (coordSupMotSup == -1 && (!coordsTTS.isEmpty())) {
-                coordTTSGlobal = coordsTTS.get(0) + stopRef;
-            }
+        } else if (coordSupMotSup == -1 && (!coordsTTS.isEmpty())) {
+            coordTTSGlobal = coordsTTS.get(0) + stopRef;
         }
 
         return coordTTSGlobal;
@@ -1218,29 +1241,91 @@ public class Analizer {
      * proceso. Ya se tiene un ORF y se desea completar el transcrito
      * correspondiente.
      */
-    public Motivo definirCoordInrDPETSS(ArrayList<Motivo> corePromoter, ArrayList<Motivo> posiblesMotivosInr, boolean inrDPE) throws Exception {
+    public Motivo definirCoordInrDPETSS(ArrayList<Motivo> corePromoter, ArrayList<Motivo> posiblesMotivosInrDpe, boolean inrDPE) throws Exception {
 
-        /*
-         * En este caso los corepromoter deben tener caja TATA si se quieren manejar distancias.
-         * 
-         */
         int coordSupCorePromoter;
 
         // Se define motivo del core promoter mas cercano al Inr o al DPE.
         Motivo motivoSup = corePromoter.get(corePromoter.size() - 1), motivoInrDPE = null;
 
         coordSupCorePromoter = motivoSup.getCoordenadas()[1];
+        String core = motivoSup.getCore();
+        int distMin = 0;
 
-        for (Motivo posibleInrDPE : posiblesMotivosInr) {
+        if (inrDPE) {
 
-            //if ((posibleInrDPE.getCoordenadas()[0] > coordSupCorePromoter) && hasConsenseInrDPE(true, posibleInrDPE)) {
-            if ((posibleInrDPE.getCoordenadas()[0] > coordSupCorePromoter) && hasConsenseInrDPE(inrDPE, posibleInrDPE)) {
-                /*coordInfMotDSE = posibleDSE.getCoordenadas()[0];
-                 distanciaCorePromoterDSE = coordInfMotDSE - coordSupCorePromoter;
-                 if ((distanciaMinCorePromoter_DSE < distanciaCorePromoterDSE) && (distanciaCorePromoterDSE < distanciaMaxCorePromoter_DSE)) {
-                 motivoDSE = posibleDSE;
-                 break;
-                 }*/
+            switch (core.toLowerCase()) {
+
+                case "caat":
+                    distMin = 120;
+                    break;
+
+                case "gc":
+                    distMin = 120;
+                    break;
+
+                case "bre":
+                    distMin = 25;
+                    break;
+
+                case "tata":
+                    distMin = 20;
+                    break;
+
+                case "inr-tata-like":
+                    distMin = 20;
+                    break;
+
+                case "dpe-tata-like":
+                    distMin = 0;
+                    break;
+
+                default:
+                    distMin = 0;
+                    break;
+            }
+        } else {
+
+            switch (core.toLowerCase()) {
+
+                case "caat":
+                    distMin = 140;
+                    break;
+
+                case "gc":
+                    distMin = 140;
+                    break;
+
+                case "bre":
+                    distMin = 45;
+                    break;
+
+                case "tata":
+                    distMin = 40;
+                    break;
+
+                case "inr":
+                    distMin = 20;
+                    break;
+
+                case "inr-tata-like":
+                    distMin = 20;
+                    break;
+
+                case "dpe-tata-like":
+                    distMin = 0;
+                    break;
+
+                default:
+                    distMin = 0;
+                    break;
+
+            }
+        }
+
+        for (Motivo posibleInrDPE : posiblesMotivosInrDpe) {
+
+            if ((posibleInrDPE.getCoordenadas()[0] > (coordSupCorePromoter + distMin)) && hasConsenseInrDPE(inrDPE, posibleInrDPE)) {
                 motivoInrDPE = posibleInrDPE;
                 break;
             }
@@ -1515,11 +1600,9 @@ public class Analizer {
                             if (menorBRE == -1) {
                                 menorBRE = menorCoordBRE;
                                 breCajaTata = bre;
-                            } else {
-                                if (menorCoordBRE > menorBRE) {
-                                    menorBRE = menorCoordBRE;
-                                    breCajaTata = bre;
-                                }
+                            } else if (menorCoordBRE > menorBRE) {
+                                menorBRE = menorCoordBRE;
+                                breCajaTata = bre;
                             }
                         }
                     }
@@ -1533,11 +1616,9 @@ public class Analizer {
                             if (menorCAAT == -1) {
                                 menorCAAT = menorCoordCAAT;
                                 caatCajaBre = caat;
-                            } else {
-                                if (menorCoordCAAT > menorCAAT) {
-                                    menorCAAT = menorCoordCAAT;
-                                    caatCajaBre = caat;
-                                }
+                            } else if (menorCoordCAAT > menorCAAT) {
+                                menorCAAT = menorCoordCAAT;
+                                caatCajaBre = caat;
                             }
                         }
                     }
@@ -1550,11 +1631,9 @@ public class Analizer {
                         if (menorGC == -1) {
                             menorGC = menorCoordGC;
                             gcCajaTATA = gc;
-                        } else {
-                            if (menorCoordGC > menorGC) {
-                                menorGC = menorCoordGC;
-                                gcCajaTATA = gc;
-                            }
+                        } else if (menorCoordGC > menorGC) {
+                            menorGC = menorCoordGC;
+                            gcCajaTATA = gc;
                         }
                     }
 
@@ -1597,11 +1676,9 @@ public class Analizer {
                             if (menorBRE == -1) {
                                 menorBRE = menorCoordBRE;
                                 breCajaTata = bre;
-                            } else {
-                                if (menorCoordBRE > menorBRE) {
-                                    menorBRE = menorCoordBRE;
-                                    breCajaTata = bre;
-                                }
+                            } else if (menorCoordBRE > menorBRE) {
+                                menorBRE = menorCoordBRE;
+                                breCajaTata = bre;
                             }
                         }
                     }
@@ -1615,11 +1692,9 @@ public class Analizer {
                             if (menorCAAT == -1) {
                                 menorCAAT = menorCoordCAAT;
                                 caatCajaBre = caat;
-                            } else {
-                                if (menorCoordCAAT > menorCAAT) {
-                                    menorCAAT = menorCoordCAAT;
-                                    caatCajaBre = caat;
-                                }
+                            } else if (menorCoordCAAT > menorCAAT) {
+                                menorCAAT = menorCoordCAAT;
+                                caatCajaBre = caat;
                             }
                         }
                     }
@@ -1658,11 +1733,9 @@ public class Analizer {
                             if (menorBRE == -1) {
                                 menorBRE = menorCoordBRE;
                                 breCajaTATA = bre;
-                            } else {
-                                if (menorCoordBRE > menorBRE) {
-                                    menorBRE = menorCoordBRE;
-                                    breCajaTATA = bre;
-                                }
+                            } else if (menorCoordBRE > menorBRE) {
+                                menorBRE = menorCoordBRE;
+                                breCajaTATA = bre;
                             }
                         }
                     }
@@ -1675,11 +1748,9 @@ public class Analizer {
                         if (menorGC == -1) {
                             menorGC = menorCoordGC;
                             gcCajaTATA = gc;
-                        } else {
-                            if (menorCoordGC > menorGC) {
-                                menorGC = menorCoordGC;
-                                gcCajaTATA = gc;
-                            }
+                        } else if (menorCoordGC > menorGC) {
+                            menorGC = menorCoordGC;
+                            gcCajaTATA = gc;
                         }
                     }
 
@@ -1718,11 +1789,9 @@ public class Analizer {
                             if (menorBRE == -1) {
                                 menorBRE = menorCoordBRE;
                                 breCajaTATA = bre;
-                            } else {
-                                if (menorCoordBRE > menorBRE) {
-                                    menorBRE = menorCoordBRE;
-                                    breCajaTATA = bre;
-                                }
+                            } else if (menorCoordBRE > menorBRE) {
+                                menorBRE = menorCoordBRE;
+                                breCajaTATA = bre;
                             }
                         }
                     }
@@ -1762,11 +1831,9 @@ public class Analizer {
                             if (menorCAAT == -1) {
                                 menorCAAT = menorCoordCAAT;
                                 caatCajaTATA = caat;
-                            } else {
-                                if (menorCoordCAAT > menorCAAT) {
-                                    menorCAAT = menorCoordCAAT;
-                                    caatCajaTATA = caat;
-                                }
+                            } else if (menorCoordCAAT > menorCAAT) {
+                                menorCAAT = menorCoordCAAT;
+                                caatCajaTATA = caat;
                             }
                         }
                     }
@@ -1779,11 +1846,9 @@ public class Analizer {
                         if (menorGC == -1) {
                             menorGC = menorCoordGC;
                             gcCajaTATA = gc;
-                        } else {
-                            if (menorCoordGC > menorGC) {
-                                menorGC = menorCoordGC;
-                                gcCajaTATA = gc;
-                            }
+                        } else if (menorCoordGC > menorGC) {
+                            menorGC = menorCoordGC;
+                            gcCajaTATA = gc;
                         }
                     }
 
@@ -1824,11 +1889,9 @@ public class Analizer {
                             if (menorCAAT == -1) {
                                 menorCAAT = menorCoordCAAT;
                                 caatCajaTATA = caat;
-                            } else {
-                                if (menorCoordCAAT > menorCAAT) {
-                                    menorCAAT = menorCoordCAAT;
-                                    caatCajaTATA = caat;
-                                }
+                            } else if (menorCoordCAAT > menorCAAT) {
+                                menorCAAT = menorCoordCAAT;
+                                caatCajaTATA = caat;
                             }
                         }
                     }
@@ -1868,11 +1931,9 @@ public class Analizer {
                         if (menorGC == -1) {
                             menorGC = menorCoordGC;
                             gcCajaTATA = gc;
-                        } else {
-                            if (menorCoordGC > menorGC) {
-                                menorGC = menorCoordGC;
-                                gcCajaTATA = gc;
-                            }
+                        } else if (menorCoordGC > menorGC) {
+                            menorGC = menorCoordGC;
+                            gcCajaTATA = gc;
                         }
                     }
 
@@ -1925,11 +1986,9 @@ public class Analizer {
                             if (menorCAAT == -1) {
                                 menorCAAT = menorCoordCAAT;
                                 caatCajaBRE = caat;
-                            } else {
-                                if (menorCoordCAAT > menorCAAT) {
-                                    menorCAAT = menorCoordBRE;
-                                    caatCajaBRE = caat;
-                                }
+                            } else if (menorCoordCAAT > menorCAAT) {
+                                menorCAAT = menorCoordBRE;
+                                caatCajaBRE = caat;
                             }
                         }
                     }
@@ -1943,11 +2002,9 @@ public class Analizer {
                             if (menorGC == -1) {
                                 menorGC = menorCoordGC;
                                 gcCajaBRE = gc;
-                            } else {
-                                if (menorCoordGC > menorGC) {
-                                    menorGC = menorCoordBRE;
-                                    gcCajaBRE = gc;
-                                }
+                            } else if (menorCoordGC > menorGC) {
+                                menorGC = menorCoordBRE;
+                                gcCajaBRE = gc;
                             }
                         }
                     }
@@ -1989,11 +2046,9 @@ public class Analizer {
                             if (menorCAAT == -1) {
                                 menorCAAT = menorCoordCAAT;
                                 caatCajaBRE = caat;
-                            } else {
-                                if (menorCoordCAAT > menorCAAT) {
-                                    menorCAAT = menorCoordBRE;
-                                    caatCajaBRE = caat;
-                                }
+                            } else if (menorCoordCAAT > menorCAAT) {
+                                menorCAAT = menorCoordBRE;
+                                caatCajaBRE = caat;
                             }
                         }
                     }
@@ -2032,11 +2087,9 @@ public class Analizer {
                             if (menorGC == -1) {
                                 menorGC = menorCoordGC;
                                 gcCajaBRE = gc;
-                            } else {
-                                if (menorCoordGC > menorGC) {
-                                    menorGC = menorCoordBRE;
-                                    gcCajaBRE = gc;
-                                }
+                            } else if (menorCoordGC > menorGC) {
+                                menorGC = menorCoordBRE;
+                                gcCajaBRE = gc;
                             }
                         }
                     }
@@ -2236,11 +2289,9 @@ public class Analizer {
                             if (menorPolyA_Signal == -1) {
                                 menorPolyA_Signal = menorCoordPolyA_Signal;
                                 polyA_SignalCajaPolyA_Site = motivoPolyA_Signal;
-                            } else {
-                                if (menorCoordPolyA_Signal > menorPolyA_Signal) {
-                                    menorPolyA_Signal = menorCoordPolyA_Signal;
-                                    polyA_SignalCajaPolyA_Site = motivoPolyA_Signal;
-                                }
+                            } else if (menorCoordPolyA_Signal > menorPolyA_Signal) {
+                                menorPolyA_Signal = menorCoordPolyA_Signal;
+                                polyA_SignalCajaPolyA_Site = motivoPolyA_Signal;
                             }
                         }
                     }
@@ -2254,11 +2305,9 @@ public class Analizer {
                             if (menorCPE == -1) {
                                 menorCPE = menorCoordCPE;
                                 CPECajaPolyA_Signal = motivoCPE;
-                            } else {
-                                if (menorCoordCPE > menorCPE) {
-                                    menorCPE = menorCoordCPE;
-                                    CPECajaPolyA_Signal = motivoCPE;
-                                }
+                            } else if (menorCoordCPE > menorCPE) {
+                                menorCPE = menorCoordCPE;
+                                CPECajaPolyA_Signal = motivoCPE;
                             }
                         }
                     }
@@ -2345,11 +2394,9 @@ public class Analizer {
                             if (menorPolyA_Signal == -1) {
                                 menorPolyA_Signal = menorCoordPolyA_Signal;
                                 PolyA_SignalCajaPolyA_Site = motivoPolyA_Signal;
-                            } else {
-                                if (menorCoordPolyA_Signal > menorPolyA_Signal) {
-                                    menorPolyA_Signal = menorCoordPolyA_Signal;
-                                    PolyA_SignalCajaPolyA_Site = motivoPolyA_Signal;
-                                }
+                            } else if (menorCoordPolyA_Signal > menorPolyA_Signal) {
+                                menorPolyA_Signal = menorCoordPolyA_Signal;
+                                PolyA_SignalCajaPolyA_Site = motivoPolyA_Signal;
                             }
                         }
                     }
@@ -2390,11 +2437,9 @@ public class Analizer {
                             if (menorCPE == -1) {
                                 menorCPE = menorCoordCPE;
                                 CPECajaPolyA_Signal = motivoCPE;
-                            } else {
-                                if (menorCoordCPE > menorCPE) {
-                                    menorCPE = menorCoordPolyA_Signal;
-                                    CPECajaPolyA_Signal = motivoCPE;
-                                }
+                            } else if (menorCoordCPE > menorCPE) {
+                                menorCPE = menorCoordPolyA_Signal;
+                                CPECajaPolyA_Signal = motivoCPE;
                             }
                         }
                     }
@@ -2434,7 +2479,7 @@ public class Analizer {
          }
          }
          */
-        /*
+ /*
          if (motivosPolyA_Site.isEmpty() && motivosPolyA_Signal.isEmpty() && !motivosCPE.isEmpty() && !corePromotersDefined) {
 
          System.out.println("Esta region UTR3p contiene promotores tipoCoreProm: 0 0 1");
@@ -2743,11 +2788,9 @@ public class Analizer {
                                     if (!Restricciones.checkSizeExon(inicio, fin)) {
                                         pass = false;
                                         break;
-                                    } else {
-                                        if (i == (lecture.getExons().size() - 1)) {
-                                            if (!Restricciones.checkLength(exonsLength)) {
-                                                pass = false;
-                                            }
+                                    } else if (i == (lecture.getExons().size() - 1)) {
+                                        if (!Restricciones.checkLength(exonsLength)) {
+                                            pass = false;
                                         }
                                     }
 
@@ -2946,12 +2989,10 @@ public class Analizer {
 
         if (reporteAbs) {
             referenciaGlobalCoords = coordenadaGlobGen;
+        } else if (hebra.equalsIgnoreCase("+")) {
+            referenciaGlobalCoords = 0;
         } else {
-            if (hebra.equalsIgnoreCase("+")) {
-                referenciaGlobalCoords = 0;
-            } else {
-                referenciaGlobalCoords = finG - inicioG + 1;
-            }
+            referenciaGlobalCoords = finG - inicioG + 1;
         }
 
         //String genID = metaData.get_GenID().get(0);
@@ -3135,21 +3176,16 @@ public class Analizer {
                         posicionIniExon = coordIniTrans;
                         posicionFinExon = exon.getEnd().position;
 
+                    } else if (numExons == 0 && totalExons == 1) {
+                        posicionIniExon = coordIniTrans;
+                        posicionFinExon = coordFinTrans;
+
+                    } else if (numExons != 0 && numExons != totalExons - 1) {
+                        posicionIniExon = exon.getStart().position;
+                        posicionFinExon = exon.getEnd().position;
                     } else {
-
-                        if (numExons == 0 && totalExons == 1) {
-                            posicionIniExon = coordIniTrans;
-                            posicionFinExon = coordFinTrans;
-
-                        } else {
-                            if (numExons != 0 && numExons != totalExons - 1) {
-                                posicionIniExon = exon.getStart().position;
-                                posicionFinExon = exon.getEnd().position;
-                            } else {
-                                posicionIniExon = exon.getStart().position;
-                                posicionFinExon = coordFinTrans;
-                            }
-                        }
+                        posicionIniExon = exon.getStart().position;
+                        posicionFinExon = coordFinTrans;
                     }
 
                     String exonID = mRNA_ID + "-Exon-" + numExons;
@@ -3197,10 +3233,8 @@ public class Analizer {
                 menorMotivoUTR5p = utr5p.getPromoter().get(0);
                 if (coordMenorMotivoUTRs5p == -1) {
                     coordMenorMotivoUTRs5p = menorMotivoUTR5p.getCoordenadas()[0];
-                } else {
-                    if (menorMotivoUTR5p.getCoordenadas()[0] < coordMenorMotivoUTRs5p) {
-                        coordMenorMotivoUTRs5p = menorMotivoUTR5p.getCoordenadas()[0];
-                    }
+                } else if (menorMotivoUTR5p.getCoordenadas()[0] < coordMenorMotivoUTRs5p) {
+                    coordMenorMotivoUTRs5p = menorMotivoUTR5p.getCoordenadas()[0];
                 }
             } else {
                 System.out.println("Alerta: UTR5p sin region promotora");
@@ -3217,10 +3251,8 @@ public class Analizer {
 
                     if (coordMayorMotivoUTRs3p == -1) {
                         coordMayorMotivoUTRs3p = mayorMotivoUTR3p.getCoordenadas()[1];
-                    } else {
-                        if (mayorMotivoUTR3p.getCoordenadas()[1] > coordMayorMotivoUTRs3p) {
-                            coordMayorMotivoUTRs3p = mayorMotivoUTR3p.getCoordenadas()[1];
-                        }
+                    } else if (mayorMotivoUTR3p.getCoordenadas()[1] > coordMayorMotivoUTRs3p) {
+                        coordMayorMotivoUTRs3p = mayorMotivoUTR3p.getCoordenadas()[1];
                     }
 
                 }
@@ -3230,10 +3262,8 @@ public class Analizer {
 
                     if (coordMayorMotivoUTRs3p == -1) {
                         coordMayorMotivoUTRs3p = mayorMotivoUTR3p.getCoordenadas()[1];
-                    } else {
-                        if (mayorMotivoUTR3p.getCoordenadas()[1] > coordMayorMotivoUTRs3p) {
-                            coordMayorMotivoUTRs3p = mayorMotivoUTR3p.getCoordenadas()[1];
-                        }
+                    } else if (mayorMotivoUTR3p.getCoordenadas()[1] > coordMayorMotivoUTRs3p) {
+                        coordMayorMotivoUTRs3p = mayorMotivoUTR3p.getCoordenadas()[1];
                     }
 
                 }
@@ -3272,10 +3302,8 @@ public class Analizer {
 
                     if (coordMayorMotivoUTRs3p == -1) {
                         coordMayorMotivoUTRs3p = mayorMotivoUTR3p.getCoordenadas()[1];
-                    } else {
-                        if (mayorMotivoUTR3p.getCoordenadas()[1] > coordMayorMotivoUTRs3p) {
-                            coordMayorMotivoUTRs3p = mayorMotivoUTR3p.getCoordenadas()[1];
-                        }
+                    } else if (mayorMotivoUTR3p.getCoordenadas()[1] > coordMayorMotivoUTRs3p) {
+                        coordMayorMotivoUTRs3p = mayorMotivoUTR3p.getCoordenadas()[1];
                     }
 
                 }
@@ -3285,10 +3313,8 @@ public class Analizer {
 
                     if (coordMayorMotivoUTRs3p == -1) {
                         coordMayorMotivoUTRs3p = mayorMotivoUTR3p.getCoordenadas()[1];
-                    } else {
-                        if (mayorMotivoUTR3p.getCoordenadas()[1] > coordMayorMotivoUTRs3p) {
-                            coordMayorMotivoUTRs3p = mayorMotivoUTR3p.getCoordenadas()[1];
-                        }
+                    } else if (mayorMotivoUTR3p.getCoordenadas()[1] > coordMayorMotivoUTRs3p) {
+                        coordMayorMotivoUTRs3p = mayorMotivoUTR3p.getCoordenadas()[1];
                     }
 
                 }
@@ -3314,10 +3340,8 @@ public class Analizer {
                 menorMotivoUTR5p = utr5p.getPromoter().get(0);
                 if (coordMenorMotivoUTRs5p == -1) {
                     coordMenorMotivoUTRs5p = menorMotivoUTR5p.getCoordenadas()[0];
-                } else {
-                    if (menorMotivoUTR5p.getCoordenadas()[0] < coordMenorMotivoUTRs5p) {
-                        coordMenorMotivoUTRs5p = menorMotivoUTR5p.getCoordenadas()[0];
-                    }
+                } else if (menorMotivoUTR5p.getCoordenadas()[0] < coordMenorMotivoUTRs5p) {
+                    coordMenorMotivoUTRs5p = menorMotivoUTR5p.getCoordenadas()[0];
                 }
             } else {
                 System.out.println("Alerta: UTR5p sin region promotora");
@@ -3409,21 +3433,16 @@ public class Analizer {
                     posicionIniExon = coordIniTrans;
                     posicionFinExon = exon.getEnd().position + referenciaGlobalCoords + 1;
 
+                } else if (numExons == 0 && totalExons == 1) {
+                    posicionIniExon = coordIniTrans;
+                    posicionFinExon = coordFinTrans;
+
+                } else if (numExons != 0 && numExons != totalExons - 1) {
+                    posicionIniExon = exon.getStart().position + referenciaGlobalCoords + 1;
+                    posicionFinExon = exon.getEnd().position + referenciaGlobalCoords + 1;
                 } else {
-
-                    if (numExons == 0 && totalExons == 1) {
-                        posicionIniExon = coordIniTrans;
-                        posicionFinExon = coordFinTrans;
-
-                    } else {
-                        if (numExons != 0 && numExons != totalExons - 1) {
-                            posicionIniExon = exon.getStart().position + referenciaGlobalCoords + 1;
-                            posicionFinExon = exon.getEnd().position + referenciaGlobalCoords + 1;
-                        } else {
-                            posicionIniExon = exon.getStart().position + referenciaGlobalCoords + 1;
-                            posicionFinExon = coordFinTrans;
-                        }
-                    }
+                    posicionIniExon = exon.getStart().position + referenciaGlobalCoords + 1;
+                    posicionFinExon = coordFinTrans;
                 }
 
                 String exonID = mRNA_ID + "-Exon-" + numExons;
@@ -3543,21 +3562,16 @@ public class Analizer {
                     posicionIniExon = coordIniTrans;
                     posicionFinExon = exon.getEnd().position;
 
+                } else if (numExons == 0 && totalExons == 1) {
+                    posicionIniExon = coordIniTrans;
+                    posicionFinExon = coordFinTrans;
+
+                } else if (numExons != 0 && numExons != totalExons - 1) {
+                    posicionIniExon = exon.getStart().position;
+                    posicionFinExon = exon.getEnd().position;
                 } else {
-
-                    if (numExons == 0 && totalExons == 1) {
-                        posicionIniExon = coordIniTrans;
-                        posicionFinExon = coordFinTrans;
-
-                    } else {
-                        if (numExons != 0 && numExons != totalExons - 1) {
-                            posicionIniExon = exon.getStart().position;
-                            posicionFinExon = exon.getEnd().position;
-                        } else {
-                            posicionIniExon = exon.getStart().position;
-                            posicionFinExon = coordFinTrans;
-                        }
-                    }
+                    posicionIniExon = exon.getStart().position;
+                    posicionFinExon = coordFinTrans;
                 }
 
                 String exonID = mRNA_ID + "-Exon-" + numExons;
@@ -3968,12 +3982,10 @@ public class Analizer {
 
         if (reporteAbs) {
             referenciaGlobalCoords = Integer.parseInt(coordenadaGlobGen);
+        } else if (hebra.equalsIgnoreCase("+")) {
+            referenciaGlobalCoords = 0;
         } else {
-            if (hebra.equalsIgnoreCase("+")) {
-                referenciaGlobalCoords = 0;
-            } else {
-                referenciaGlobalCoords = Integer.parseInt(finG) - Integer.parseInt(inicioG) + 1;
-            }
+            referenciaGlobalCoords = Integer.parseInt(finG) - Integer.parseInt(inicioG) + 1;
         }
 
         int coordGlobTATA;
