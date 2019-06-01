@@ -228,44 +228,53 @@ public class Analizer {
         int barrido = -1, distMin, distMax;
         boolean exploracion = true;
         double mayorProbTSS = 0.0;
-
-        int motivoSupCoordenadas = motivoSup.getCoordenadas()[1];
-        String core = motivoSup.getCore();
-
         List<Integer> tss = constructor.getTss();
         ArrayList<Double> distPosTss = constructor.getDistPosTss();
 
-        switch (core.toLowerCase()) {
+        int motivoSupCoordenadas = 0;
 
-            case "caat":
-                distMin = 120;
-                distMax = 140;
-                break;
+        if (motivoSup != null) {
 
-            case "gc":
-                distMin = 120;
-                distMax = 140;
-                break;
+            motivoSupCoordenadas = motivoSup.getCoordenadas()[1];
+            String core = motivoSup.getCore();
 
-            case "bre":
-                distMin = 25;
-                distMax = 500;
-                break;
+            switch (core.toLowerCase()) {
 
-            case "tata":
-                distMin = 20;
-                distMax = 40;
-                break;
+                case "caat":
+                    distMin = 120;
+                    distMax = 140;
+                    break;
 
-            case "inr-tata-like":
-                distMin = 20;
-                distMax = 40;
-                break;
+                case "gc":
+                    distMin = 120;
+                    distMax = 140;
+                    break;
 
-            default:
-                distMin = 0;
-                distMax = 0;
-                break;
+                case "bre":
+                    distMin = 25;
+                    distMax = 500;
+                    break;
+
+                case "tata":
+                    distMin = 20;
+                    distMax = 40;
+                    break;
+
+                case "inr-tata-like":
+                    distMin = 20;
+                    distMax = 40;
+                    break;
+
+                default:
+                    distMin = 0;
+                    distMax = 0;
+                    break;
+            }
+
+        } else {
+
+            distMin = 0;
+            distMax = inicioATG - Model.minUTR5p;
         }
 
         for (Integer posicion : constructor.getTss()) {
@@ -290,9 +299,9 @@ public class Analizer {
 
                 if (distPosTss.get(barrido) > mayorProbTSS) {
                     mayorProbTSS = distPosTss.get(barrido);
-                    TSS = tss.get(barrido);                    
+                    TSS = tss.get(barrido);
                 }
-                
+
                 barrido++;
 
             } else {
@@ -373,13 +382,16 @@ public class Analizer {
             //int distanciaMinInr_DPE = 28;
             //int distanciaMaxInr_DPE = 32;
             //int sizeCorePromoter;
+            int coordTSS;
+            int minUTR5p = 0;
+
             if (!corePromoters.isEmpty()) {
-                int coordTSS;
+
                 for (ArrayList<Motivo> corePromoter : corePromoters) {// Que pasa si no hay core promoter?:
-                    // Se invoca al predictor para que proponga TSS.
 
                     coordTSS = 0;
-                    if (inrILP) {
+
+                    if (inrILP) { // Se invoca al predictor ILP para que proponga TSS.
                         utr5pDefined = false;
                         /*int coordTSSp1EPD = definirCoordTSS(corePromoter, lectura);// Se invoca al predictor para que proponga TSS.
                          // Se asigna UTRs5p al core promoter en curso para lectura.
@@ -388,11 +400,10 @@ public class Analizer {
                          coordsTSS.add(coordTSSp1EPD);
                          }*/
                         //coordsTSS.add(coordTTS);
-                    } else { // La coordenada TSS se define por consenso Inr o distancia DPE.
+                    } else { // La coordenada TSS se define por consenso Inr, distancia DPE o modelo clasificador.
 
                         Motivo motivoInrDPE = null;
                         Motivo motivoDPE = null;
-                        int minUTR5p = 0;
 
                         Motivo motivoSup = corePromoter.get(corePromoter.size() - 1);
                         String core = motivoSup.getCore();
@@ -400,46 +411,46 @@ public class Analizer {
                         if (motivoSup.getCore().equals("Inr-tata-like")) {
 
                             motivoInrDPE = motivoSup;
-                            coordTSS = definirTSS(motivoSup, inicioATG.position, constructor);
 
-                            //coordTSS = motivoInrDPE.getCoordenadas()[0] + 2;
+                            coordTSS = motivoInrDPE.getCoordenadas()[0] + 2;
+                            corePromoter.add(motivoInrDPE);
+
                             motivoDPE = definirCoordInrDPETSS(corePromoter, posiblesMotivosInrDPE, false);
 
                             if (motivoDPE != null) {
-                                if (motivoDPE.getCoordenadas()[1] > (coordTSS + 20)) {
-                                    motivoDPE.setCore("DPE");
-                                    corePromoter.add(motivoDPE);
-                                    corePromotersInrDPE.add(corePromoter);
-                                    System.out.println("El Gen " + metaData.get_GenID().get(0) + " posee caja DPE en coordenada: " + motivoDPE.getCoordenadas()[0]);
-                                }
+                                motivoDPE.setCore("DPE");
+                                corePromoter.add(motivoDPE);
+                                System.out.println("El Gen " + metaData.get_GenID().get(0) + " posee caja DPE en coordenada: " + motivoDPE.getCoordenadas()[0]);
                             }
 
                             // Se asigna UTRs5p al core promoter en curso para lectura.
                             // 
-                            if (!coordsTSS.contains(coordTSS)) { //!!!! Ojo si se pueden repetir TSSs si hay diferentes TTSs
-                                utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, corePromoter);
-                                coordsTSS.add(coordTSS);
+                            minUTR5p = inicioATG.position - coordTSS;
+
+                            if ((minUTR5p >= Model.minUTR5p) && (minUTR5p <= Model.maxUTR5p)) {
+
+                                if (!coordsTSS.contains(coordTSS)) { //!!!! Ojo si se pueden repetir TSSs si hay diferentes TTSs
+                                    utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, corePromoter);
+                                    coordsTSS.add(coordTSS);
+                                }
                             }
 
                         } else if (motivoSup.getCore().equals("DPE-tata-like")) {
 
-                            /*
-                                La coordenada TSS debe determinarse entre el motivo "DPE-tata-like" y el inicio del ORF. Tambien
-                                podria explorarse otro posible DPE aguas arriba y entre estos dos hallar el mejor TSS.
-                                El metodo recibira la coordenada superior del corepromoter mas a la derecha, el limite inferior
-                                y superior para realizar la exploracion del posible TSS y la lista de psosibles TSSs hallados
-                                por el clasificador. El metodo devolvera el TSS masprobable en ese rango de posiciones.
-                                Tambien debe pasarse la coordenada del ATG para no asignar TSS mas alla de esa posicion.
-                             */
                             coordTSS = definirTSS(motivoSup, inicioATG.position, constructor);
 
-                            motivoDPE = motivoSup;
-                            corePromoter.add(motivoDPE);
-                            corePromotersInrDPE.add(corePromoter);
                             System.out.println("El Gen " + metaData.get_GenID().get(0) + " posee caja DPE en coordenada: " + motivoDPE.getCoordenadas()[0]);
-                            if (!coordsTSS.contains(coordTSS)) {
-                                utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, corePromoter);
-                                coordsTSS.add(coordTSS);
+
+                            corePromoter.add(motivoSup);
+
+                            minUTR5p = inicioATG.position - coordTSS;
+
+                            if ((minUTR5p >= Model.minUTR5p) && (minUTR5p <= Model.maxUTR5p)) {
+
+                                if (!coordsTSS.contains(coordTSS)) {
+                                    utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, corePromoter);
+                                    coordsTSS.add(coordTSS);
+                                }
                             }
 
                         }
@@ -447,28 +458,30 @@ public class Analizer {
                         if (!posiblesMotivosInrDPE.isEmpty() && (coordTSS == 0)) {
 
                             motivoInrDPE = definirCoordInrDPETSS(corePromoter, posiblesMotivosInrDPE, true);
-                            motivoInrDPE = null;
+                            //motivoInrDPE = null;
 
                             if (motivoInrDPE != null) {
+
                                 coordTSS = motivoInrDPE.getCoordenadas()[0] + 2;
-                                minUTR5p = inicioATG.position - coordTSS;
+
                                 core = motivoInrDPE.getCore();
+
+                                minUTR5p = inicioATG.position - coordTSS;
 
                                 if ((minUTR5p >= Model.minUTR5p) && (minUTR5p <= Model.maxUTR5p)) {
 
                                     //motivoInrDPE.setCore("Inr");
                                     corePromoter.add(motivoInrDPE);
-                                    corePromotersInr.add(corePromoter);
-
+                                    //corePromotersInr.add(corePromoter);
                                     System.out.println("El Gen " + metaData.get_GenID().get(0) + " posee caja Inr en coordenada: " + coordTSS);
 
                                     // Se define motivo DPE para el core promoter en curso.
                                     motivoDPE = definirCoordInrDPETSS(corePromoter, posiblesMotivosInrDPE, false);
 
                                     if (motivoDPE != null) {
-                                        //motivoDPE.setCore("DPE");
+                                        motivoDPE.setCore("DPE");
                                         corePromoter.add(motivoDPE);
-                                        corePromotersInrDPE.add(corePromoter);
+                                        //corePromotersInrDPE.add(corePromoter);
                                         System.out.println("El Gen " + metaData.get_GenID().get(0) + " posee caja DPE en coordenada: " + motivoDPE.getCoordenadas()[0]);
                                     }
 
@@ -481,23 +494,17 @@ public class Analizer {
                             } else {
 
                                 motivoDPE = definirCoordInrDPETSS(corePromoter, posiblesMotivosInrDPE, false);
-                                motivoDPE = null;
+                                //motivoDPE = null;
                                 if (motivoDPE != null) {
 
-                                    /*
-                                    La coordenada TSS debe determinarse entre el motivo "DPE-tata-like" y el inicio del ORF. Tambien
-                                    podria explorarse otro posible DPE aguas arriba y entre estos dos hallar el mejor Inr.
-                                     */
-                                    //********
-                                    coordTSS = motivoDPE.getCoordenadas()[0] - 26;
-                                    //********
+                                    coordTSS = definirTSS(motivoSup, motivoDPE.getCoordenadas()[0], constructor);
 
                                     minUTR5p = inicioATG.position - coordTSS;      // entre coord del DPE y la del ATG
                                     core = "DPE";
                                     if ((minUTR5p >= Model.minUTR5p) && (minUTR5p <= Model.maxUTR5p)) {
                                         motivoDPE.setCore("DPE");
                                         corePromoter.add(motivoDPE);
-                                        corePromotersInrDPE.add(corePromoter);
+                                        //corePromotersInrDPE.add(corePromoter);
                                         System.out.println("El Gen " + metaData.get_GenID().get(0) + " posee caja DPE en coordenada: " + motivoDPE.getCoordenadas()[0]);
 
                                         utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, corePromoter);
@@ -515,9 +522,10 @@ public class Analizer {
                                 y si se debe elegir por ATG o DPE.                                
                                      */
                                     coordTSS = definirTSS(motivoSup, inicioATG.position, constructor);
+
                                     if (coordTSS != 0) {
-                                        int distUTR5p = inicioATG.position - coordTSS;
-                                        if ((distUTR5p >= Model.minUTR5p) && (distUTR5p <= Model.maxUTR5p)) {
+                                        minUTR5p = inicioATG.position - coordTSS;
+                                        if ((minUTR5p >= Model.minUTR5p) && (minUTR5p <= Model.maxUTR5p)) {
                                             utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, corePromoter);
                                             coordsTSS.add(coordTSS);
                                         }
@@ -533,16 +541,35 @@ public class Analizer {
                                 Para asignar coordTSS se empleara metodo que reciba el motivo mas a la derecha
                                 del corepromoter y la coordenada del ATG y, entre ambas, se asignara el mejor TSS segun los TSS
                                 ya disponibles desde el clasificador. El metodo recibira la coordenada de cierre en la exploracion
-                                y si se debe elegir por ATG o DPE.                                
+                                y si se debe elegir por ATG o DPE.        
                              */
-                            int distUTR5p = inicioATG.position - coordTSS;
-                            if ((distUTR5p >= Model.minUTR5p) && (distUTR5p <= Model.maxUTR5p)) {
-                                utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, corePromoter);
-                                coordsTSS.add(coordTSS);
+                            coordTSS = definirTSS(motivoSup, inicioATG.position, constructor);
+
+                            if (coordTSS != 0) {
+                                minUTR5p = inicioATG.position - coordTSS;
+                                if ((minUTR5p >= Model.minUTR5p) && (minUTR5p <= Model.maxUTR5p)) {
+                                    utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, corePromoter);
+                                    coordsTSS.add(coordTSS);
+                                }
                             }
                         }
                     }
                 }
+            } else { // Caso en el que no hay rpomotor pero se asigna TSS mediante los modelos del clasificador.
+                // Debe revisarse el codigo del metodo signarILPUTRs5 para este caso especial. 
+
+                coordTSS = definirTSS(null, inicioATG.position, constructor);
+
+                minUTR5p = inicioATG.position - coordTSS;
+
+                if ((minUTR5p >= Model.minUTR5p) && (minUTR5p <= Model.maxUTR5p)) {
+                    String core = "no-promoter";
+                    if (!coordsTSS.contains(coordTSS)) { //!!!! Ojo si se pueden repetir TSSs si hay diferentes TTSs
+                        utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, null);
+                        coordsTSS.add(coordTSS);
+                    }
+                }
+
             }
 
         }
@@ -861,8 +888,7 @@ public class Analizer {
                          }
                          //coordsTSS.add(coordTTS);*/
                     } else // La coordenada TTS se define por transicion GC o distancia estadistica.
-                    {
-                        if (!posiblesMotivosDSE.isEmpty()) {
+                     if (!posiblesMotivosDSE.isEmpty()) {
 
                             Motivo motivoDSE = definirMotivoDSE(uTR3CorePromoter, posiblesMotivosDSE);
 
@@ -880,40 +906,8 @@ public class Analizer {
                                 }
                             }
                         }
-                    }
                 }
-            }/* else {
-             System.out.println("No se detectan cis elements en region UTR3p por consensos o factores de transcripcion."
-             + " Se define TTS por modelo ILP para: " + metaData.get_GenID());
-             ArrayList<Motivo> motifs = new ArrayList<>();
-             int coordTTS = definirCoordTTS(motifs, lectura);// Se invoca al predictor para que proponga TSS.
-             // Se asigna UTRs3p a la lectura en curso.
-             if ((coordTTS != -1) && !coordsTTS.contains(coordTTS)) {
-             utr3pDefined = asignarILPUTRs3p(lectura, coordTTS, stop, motifs);
-             coordsTTS.add(coordTTS);
-             }
-
-             }*/
- /*
-             List<Integer> coordsPoliA = this.definirCoordPoliA(regionExplorar);
-
-             // Para cada coordenada de sitio de poliadenilacion, hacer:
-             for (Integer coordPoliA : coordsPoliA) {
-
-             // Definir region para predecir sitios de parada de transcripcion.
-             List<Information> regionParadT = constructor.getInnerInfo(coordPoliA, constructor.lastData());
-             // Llamar al predictor de sitios de parada de transcripcion y tomar el menor.
-             List<Integer> coordsParadasT = this.definirSitiosParadaTranscripcion(regionParadT);
-             Integer menorParadaT = coordsParadasT.get(0);
-             // Construir UTR3' desde la parada de esta lectura mas uno de esta lectura hasta el sitio de parada de transcripcion incluido.
-             Information inicioUTR3p = constructor.getData(stop.position + 1);
-             Information finUTR3p = constructor.getData(menorParadaT);
-             List<Information> innerUTR3p = constructor.getInnerInfo(inicioUTR3p.position, finUTR3p.position);
-             UTR3p utr3p = new UTR3p(inicioUTR3p, finUTR3p, innerUTR3p);
-             // Guardar UTR3' en esta lectura.
-             lectura.getUtr3p().add(utr3p);
-             }*/
-
+            }
         }
 
         return utr3pDefined;
