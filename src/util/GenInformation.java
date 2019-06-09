@@ -321,8 +321,8 @@ public class GenInformation {
             System.out.println("Numero de ORFs: " + analizer.getLectures().size());
 
             if (this.isGT()) {
-                analizer.constructRegionUTR5p(metaDataGen, this, iLPinr, consensos, constructor); // pasar iLPinr = false implica que se proponen TSSs por consensos.
-                //analizer.constructRegionUTR3p(metaDataGen, this, false);
+                analizer.constructRegionUTR5p(metaDataGen, this, iLPinr, consensos); // pasar iLPinr = false implica que se proponen TSSs por consensos.
+                analizer.constructRegionUTR3p(metaDataGen, this, iLPinr);
             }            
             
             analizer.lectsEnsemblEpd(metaDataGen, gff3EnsemblEPDExt, reporteAbs, this);

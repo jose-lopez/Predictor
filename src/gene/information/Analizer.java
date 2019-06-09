@@ -47,7 +47,7 @@ import pipeline.BioPattern;
 //import pipeline.Factor_Transcripcion;
 import pipeline.Motivo;
 import pipeline.Region;
-import pipeline.factorTranscripcion;
+import estructura.factorTranscripcion;
 import util.GenInformation;
 import util.MiddleWare;
 
@@ -225,7 +225,7 @@ public class Analizer {
     public Integer definirTSS(Motivo motivoSup, Integer inicioATG, GeneConstructor constructor) throws Exception {
 
         Integer TSS = 0;
-        int barrido = -1, distMin, distMax;
+        int barrido = 0, distMin, distMax;
         boolean exploracion = true;
         double mayorProbTSS = 0.0;
         List<Integer> tss = constructor.getTss();
@@ -251,7 +251,7 @@ public class Analizer {
                     break;
 
                 case "bre":
-                    distMin = 25;
+                    distMin = 30;
                     distMax = 500;
                     break;
 
@@ -260,49 +260,44 @@ public class Analizer {
                     distMax = 40;
                     break;
 
-                case "inr-tata-like":
-                    distMin = 20;
-                    distMax = 40;
-                    break;
-
                 default:
                     distMin = 0;
-                    distMax = 0;
+                    distMax = inicioATG - Model.minUTR5p;
                     break;
             }
 
         } else {
 
+            motivoSupCoordenadas = inicioATG - Model.maxUTR5p;
             distMin = 0;
             distMax = inicioATG - Model.minUTR5p;
         }
 
         for (Integer posicion : constructor.getTss()) {
 
-            do {
+            if ((posicion < (motivoSupCoordenadas + distMin))) {
                 barrido++;
-            } while ((motivoSupCoordenadas + distMin) > posicion);
-
-            break;
-
-            /*
-            while ((motivoSupCoordenadas + distMin) > posicion) {
-                barrido = barrido + posicion;
+            } else {
+                break;
             }
-            break;
-             */
         }
 
         while (exploracion) {
 
-            if ((tss.get(barrido) <= (motivoSupCoordenadas + distMax)) && (inicioATG - tss.get(barrido) >= Model.minUTR5p)) {
+            if (barrido < tss.size()) {
 
-                if (distPosTss.get(barrido) > mayorProbTSS) {
-                    mayorProbTSS = distPosTss.get(barrido);
-                    TSS = tss.get(barrido);
+                if ((tss.get(barrido) <= (motivoSupCoordenadas + distMax)) && (inicioATG - tss.get(barrido) >= Model.minUTR5p)) {
+
+                    if (distPosTss.get(barrido) > mayorProbTSS) {
+                        mayorProbTSS = distPosTss.get(barrido);
+                        TSS = tss.get(barrido);
+                    }
+
+                    barrido++;
+
+                } else {
+                    exploracion = false;
                 }
-
-                barrido++;
 
             } else {
                 exploracion = false;
@@ -318,7 +313,7 @@ public class Analizer {
      * proceso. Ya se tiene un ORF y se desea completar el transcrito
      * correspondiente.
      */
-    public boolean constructRegionUTR5p(Utilities metaData, GenInformation genInformation, boolean inrILP, boolean consensos, GeneConstructor constructor) throws Exception {
+    public boolean constructRegionUTR5p(Utilities metaData, GenInformation genInformation, boolean inrILP, boolean consensos) throws Exception {
 
         boolean utr5pDefined = false;
         ArrayList<Integer> coordsTSS = new ArrayList<>();
@@ -344,6 +339,7 @@ public class Analizer {
             // En el array corePromoters estan los promotores que estan del lado izquierdo de la caja TATA y que la 
             // incluyen (cis promoters).
             Region regionPromotora = new Region(regionAdnUTR5p);
+
             ArrayList<ArrayList<Motivo>> corePromoters;
             ArrayList<ArrayList<Motivo>> corePromotersInr = new ArrayList<>();
             ArrayList<ArrayList<Motivo>> corePromotersInrDPE = new ArrayList<>();
@@ -458,7 +454,7 @@ public class Analizer {
                         if (!posiblesMotivosInrDPE.isEmpty() && (coordTSS == 0)) {
 
                             motivoInrDPE = definirCoordInrDPETSS(corePromoter, posiblesMotivosInrDPE, true);
-                            //motivoInrDPE = null;
+                            motivoInrDPE = null;
 
                             if (motivoInrDPE != null) {
 
@@ -494,7 +490,7 @@ public class Analizer {
                             } else {
 
                                 motivoDPE = definirCoordInrDPETSS(corePromoter, posiblesMotivosInrDPE, false);
-                                //motivoDPE = null;
+                                motivoDPE = null;
                                 if (motivoDPE != null) {
 
                                     coordTSS = definirTSS(motivoSup, motivoDPE.getCoordenadas()[0], constructor);
@@ -873,9 +869,15 @@ public class Analizer {
 
             }
 
+            int coordTTS = 0;
+            int minUTR3p = 0;
+
             if (!uTR3pCorePromoters.isEmpty()) {
 
                 for (ArrayList<Motivo> uTR3CorePromoter : uTR3pCorePromoters) {
+
+                    Motivo motivoSup = uTR3CorePromoter.get(uTR3CorePromoter.size() - 1);
+                    String core = motivoSup.getCore();
 
                     if (ilpConsensos) { // Se invoca al predictor para que proponga TTS.
                         utr3pDefined = false;
@@ -888,14 +890,31 @@ public class Analizer {
                          }
                          //coordsTSS.add(coordTTS);*/
                     } else // La coordenada TTS se define por transicion GC o distancia estadistica.
-                     if (!posiblesMotivosDSE.isEmpty()) {
+                    {
+                        if (!posiblesMotivosDSE.isEmpty()) {
 
                             Motivo motivoDSE = definirMotivoDSE(uTR3CorePromoter, posiblesMotivosDSE);
 
                             if (motivoDSE != null) {
-                                int coordTTS = definirTTS(uTR3CorePromoter, motivoDSE, constructor, lectura);
-                                if (coordTTS != -1) {
+
+                                coordTTS = this.definirTTSClasificador(motivoSup, motivoDSE, stop.position, constructor, lectura);
+
+                                if (coordTTS != 0) {
                                     uTR3CorePromoter.add(motivoDSE);
+                                    //corePromotersDSE.add(uTR3CorePromoter);
+
+                                    // Se asigna UTRs5p al core promoter en curso para lectura.
+                                    if (!coordsTTS.contains(coordTTS)) {
+                                        utr3pDefined = asignarILPUTRs3p(lectura, coordTTS, stop, uTR3CorePromoter);
+                                        coordsTTS.add(coordTTS);
+                                    }
+                                }
+                            } else {
+
+                                coordTTS = this.definirTTSClasificador(motivoSup, null, stop.position, constructor, lectura);
+
+                                if (coordTTS != 0) {
+
                                     corePromotersDSE.add(uTR3CorePromoter);
 
                                     // Se asigna UTRs5p al core promoter en curso para lectura.
@@ -905,8 +924,38 @@ public class Analizer {
                                     }
                                 }
                             }
+                        } else {
+
+                            coordTTS = this.definirTTSClasificador(motivoSup, null, stop.position, constructor, lectura);
+
+                            if (coordTTS != 0) {
+
+                                corePromotersDSE.add(uTR3CorePromoter);
+
+                                // Se asigna UTRs5p al core promoter en curso para lectura.
+                                if (!coordsTTS.contains(coordTTS)) {
+                                    utr3pDefined = asignarILPUTRs3p(lectura, coordTTS, stop, uTR3CorePromoter);
+                                    coordsTTS.add(coordTTS);
+                                }
+                            }
                         }
+                    }
                 }
+            } else {
+
+                // Caso en el que no hay rpomotor pero se asigna TSS mediante los modelos del clasificador.
+                // Debe revisarse el codigo del metodo signarILPUTRs5 para este caso especial.
+                coordTTS = this.definirTTSClasificador(null, null, stop.position, constructor, lectura);
+
+                if (coordTTS != 0) {
+
+                    // Se asigna UTRs5p al core promoter en curso para lectura.
+                    if (!coordsTTS.contains(coordTTS)) {
+                        utr3pDefined = asignarILPUTRs3p(lectura, coordTTS, stop, null);
+                        coordsTTS.add(coordTTS);
+                    }
+                }
+
             }
         }
 
@@ -1361,6 +1410,126 @@ public class Analizer {
         }
 
         return motivoDSE;
+
+    }
+
+    /**
+     * Metodo usado para la construccion de Regiones 5' para transcrito en
+     * proceso. Ya se tiene un ORF y se desea completar el transcrito
+     * correspondiente.
+     */
+    public int definirTTSClasificador(Motivo motivoSupCorePromoter, Motivo motivoDSE, Integer stop, GeneConstructor constructor, Gene lectura) throws Exception {
+
+        Integer TTS = 0, limSupExploracion = 0, limInfDSE = 60;
+        int barrido = 0, distMin, distMax;
+        boolean exploracion = true;
+        double mayorProbTTS = 0.0;
+        List<Integer> tts = constructor.getTts();
+        ArrayList<Double> distPosTts = constructor.getDistPosTts();
+
+        int motivoSupCoordenadas;
+
+        if (motivoSupCorePromoter != null) {
+
+            motivoSupCoordenadas = motivoSupCorePromoter.getCoordenadas()[1] + stop + 3;
+            String core = motivoSupCorePromoter.getCore();
+
+            switch (core.toLowerCase()) {
+
+                // Distancias minimas y maximas desde el core promoter al TTS
+                case "cpeb":
+                    distMin = 130;
+                    distMax = 140;
+                    break;
+
+                case "cpsf":
+                    distMin = 110;
+                    distMax = 120;
+                    break;
+
+                case "cstf":
+                    distMin = 10;
+                    distMax = 30;
+                    break;
+
+                default: // desde el stop al TTS
+                    motivoSupCoordenadas = stop + 3;
+                    distMin = Model.minUTR3p;
+                    distMax = Model.maxUTR3p;
+                    break;
+
+            }
+
+        } else {
+
+            motivoSupCoordenadas = stop + 3;
+            distMin = Model.minUTR3p;
+            distMax = Model.maxUTR3p;
+        }
+
+        if (motivoDSE != null) {
+
+            limSupExploracion = motivoDSE.getCoordenadas()[0] + stop + 3;
+
+        } else if ((lectura.getEnd().position - stop + 3) > Model.maxUTR3p) {
+
+            limSupExploracion = stop + 3 + Model.maxUTR3p;
+
+        } else if ((lectura.getEnd().position - stop + 3) > Model.minUTR3p) {
+
+            limSupExploracion = Model.minUTR3p + stop + 3;
+
+        } else {
+
+            limSupExploracion = lectura.getEnd().position + stop + 3;
+        }
+
+        for (Integer posicion : constructor.getTts()) {
+
+            if ((posicion < (motivoSupCoordenadas + distMin))) {
+                barrido++;
+            } else {
+                break;
+            }
+
+        }
+
+        //if (barrido < tts.size() - 1) { 
+        while (exploracion) {
+
+            if (barrido < tts.size()) {
+
+                if ((tts.get(barrido) <= (motivoSupCoordenadas + distMax)) && (tts.get(barrido) - stop + 3) >= Model.minUTR3p) {
+
+                    if (motivoDSE != null) {
+
+                        if (tts.get(barrido) < (motivoDSE.getCoordenadas()[0] - limInfDSE)) {
+
+                            if (distPosTts.get(barrido) > mayorProbTTS) {
+                                mayorProbTTS = distPosTts.get(barrido);
+                                TTS = tts.get(barrido);
+                            }
+                        } else {
+                            exploracion = false;
+                        }
+                    } else if (distPosTts.get(barrido) > mayorProbTTS) {
+                        mayorProbTTS = distPosTts.get(barrido);
+                        TTS = tts.get(barrido);
+                    }
+
+                    barrido++;
+
+                } else {
+                    exploracion = false;
+                }
+
+            } else {
+                exploracion = false;
+            }
+
+        }
+
+        return TTS;
 
     }
 
@@ -3010,14 +3179,15 @@ public class Analizer {
             String gen_ID = "gen-" + cont_lects;
 
             if (utr5pdefined && utr3pdefined) {// Se reporta el caso de transcritos con UTRs5p y UTRs3p
-                cont_lects = reportarUTR5pUTR3p(gene, hebra, cont_lects, salidaGTF, referenciaGlobalCoords, gen_ID, metaData, genInformation, numObjs, numIter);
-            }
+                cont_lects = reportarUTR5pUTR3p(gene, hebra, cont_lects, salidaGTF, referenciaGlobalCoords, gen_ID, metaData, genInformation, numObjs, numIter, red, complementarios);
+
+            }/*
             if (utr5pdefined && !utr3pdefined) {// Se reporta el caso de transcritos con UTRs5p y no UTRs3p
                 cont_lects = reportarUTR5p(gene, hebra, cont_lects, salidaGTF, referenciaGlobalCoords, gen_ID, metaData, genInformation, numObjs, numIter, red, complementarios);
             }
             if (!utr5pdefined && utr3pdefined) {// Se reporta el caso de transcritos con UTRs5p y no UTRs3p
                 cont_lects = reportarUTR3p(gene, hebra, cont_lects, salidaGTF, referenciaGlobalCoords, gen_ID, metaData);
-            }
+            }*/
             if (!utr5pdefined && !utr3pdefined) {// Se reporta el caso de transcritos con UTRs5p y no UTRs3p
                 cont_lects = reportarCDS(gene, hebra, cont_lects, salidaGTF, referenciaGlobalCoords, gen_ID, metaData, genInformation, numObjs, numIter, red, complementarios);
             }
@@ -3027,7 +3197,7 @@ public class Analizer {
 
     }
 
-    public int reportarUTR5pUTR3p(Gene gene, String hebra, int cont_lects, File salidaGTF, int referenciaGlobalCoords, String gen_ID, Utilities metaData, GenInformation genInformation, int numObjs, int numIter) throws IOException, Exception {
+    public int reportarUTR5pUTR3p(Gene gene, String hebra, int cont_lects, File salidaGTF, int referenciaGlobalCoords, String gen_ID, Utilities metaData, GenInformation genInformation, int numObjs, int numIter, String red, boolean complementarios) throws IOException, Exception {
 
         // Se imprimen los transcritos.
         int longExon, coordIniTrans, coordFinTrans, posicionIniExon, posicionFinExon, cuadratura;
@@ -3045,13 +3215,13 @@ public class Analizer {
         coordenadasGlobales[0] = definirCoordenadaGlobalUTR5p(utr5ps);
         coordenadasGlobales[1] = definirCoordenadaGlobalUTR3p(utr3ps);
 
-        int coordenadaInicialGenGTF = coordenadasGlobales[0];
-        int coordenadaFinalGenGTF = coordenadasGlobales[1];
+        int coordenadaInicialGenGFF = coordenadasGlobales[0];
+        int coordenadaFinalGenGFF = coordenadasGlobales[1];
 
         if (hebra.equals("+")) {
-            metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tgene\t" + (coordenadaInicialGenGTF + referenciaGlobalCoords + 1) + "\t" + (coordenadaFinalGenGTF + referenciaGlobalCoords + 1) + "\t.\t" + metaData.get_hebra() + "\t.\tID=" + gen_ID + ";Name=" + gen_ID + ";Parent=" + gen_ID, salidaGTF);
+            metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tgene\t" + (coordenadaInicialGenGFF + referenciaGlobalCoords + 1) + "\t" + (coordenadaFinalGenGFF + referenciaGlobalCoords + 1) + "\t.\t" + metaData.get_hebra() + "\t.\tID=" + gen_ID + ";Name=" + gen_ID + ";Parent=" + gen_ID, salidaGTF);
         } else {
-            metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tgene\t" + (referenciaGlobalCoords - coordenadaFinalGenGTF - 1) + "\t" + (referenciaGlobalCoords - coordenadaInicialGenGTF - 1) + "\t.\t" + metaData.get_hebra() + "\t.\tID=" + gen_ID + ";Name=" + gen_ID + ";Parent=" + gen_ID, salidaGTF);
+            metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tgene\t" + (referenciaGlobalCoords - coordenadaFinalGenGFF - 1) + "\t" + (referenciaGlobalCoords - coordenadaInicialGenGFF - 1) + "\t.\t" + metaData.get_hebra() + "\t.\tID=" + gen_ID + ";Name=" + gen_ID + ";Parent=" + gen_ID, salidaGTF);
         }
 
         for (Gene utr5p : utr5ps) {
@@ -3085,26 +3255,27 @@ public class Analizer {
                 }
 
                 // Se reportan los motivos del core promoter contenidos en el UTR5p en curso.
-                if (!corePromoter.isEmpty()) {
-                    for (Motivo motivo : corePromoter) {
+                if (corePromoter != null) {
+                    if (!corePromoter.isEmpty()) {
+                        for (Motivo motivo : corePromoter) {
 
-                        int posicionIniMotivo = motivo.getCoordenadas()[0];
-                        int posicionFinMotivo = motivo.getCoordenadas()[1];
-                        String motifID = gen_ID + motivo.getFactores().get(0).getID();
+                            int posicionIniMotivo = motivo.getCoordenadas()[0];
+                            int posicionFinMotivo = motivo.getCoordenadas()[1];
+                            String motifID = gen_ID + motivo.getFactores().get(0).getID();
 
-                        if (hebra.equals("+")) {
-                            metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tTF_binding_site\t" + (posicionIniMotivo + referenciaGlobalCoords + 1) + "\t" + (posicionFinMotivo + referenciaGlobalCoords + 1) + "\t.\t" + metaData.get_hebra() + "\t" + "." + "\t" + "ID=" + motifID + ";Name=" + motifID + ";Parent=" + gen_ID, salidaGTF);
-                        } else {
-                            metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tTF_binding_site\t" + (referenciaGlobalCoords - posicionFinMotivo - 1) + "\t" + (referenciaGlobalCoords - posicionIniMotivo - 1) + "\t.\t" + metaData.get_hebra() + "\t" + "." + "\t" + "ID=" + motifID + ";Name=" + motifID + ";Parent=" + gen_ID, salidaGTF);
+                            if (hebra.equals("+")) {
+                                metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tTF_binding_site\t" + (posicionIniMotivo + referenciaGlobalCoords + 1) + "\t" + (posicionFinMotivo + referenciaGlobalCoords + 1) + "\t.\t" + metaData.get_hebra() + "\t" + "." + "\t" + "ID=" + motifID + ";Name=" + motifID + ";Parent=" + gen_ID, salidaGTF);
+                            } else {
+                                metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tTF_binding_site\t" + (referenciaGlobalCoords - posicionFinMotivo - 1) + "\t" + (referenciaGlobalCoords - posicionIniMotivo - 1) + "\t.\t" + metaData.get_hebra() + "\t" + "." + "\t" + "ID=" + motifID + ";Name=" + motifID + ";Parent=" + gen_ID, salidaGTF);
+                            }
                         }
                     }
                 }
 
-                // Se reporta el UTR3p en curso.
-                List<Motivo> regionPolyA = utr3p.getPromoter();
-                // Se reporta el UTR5p del transcrito en curso.
+                // Se reporta el UTR3p en curso.               
                 int posIniUTR3p = utr3p.getStart().position;
-                int posFinUTR3p = coordFinTrans;
+                int posFinUTR3p = utr3p.getEnd().position;
+
                 String utr3pID = mRNA_ID + "-UTR3p-" + String.valueOf(contador_UTR3ps);
 
                 if (hebra.equals("+")) {
@@ -3114,20 +3285,25 @@ public class Analizer {
                 }
 
                 // Se reportan los motivos de la region de poliadenilacion asociados al UTR3p en curso.
-                if (!regionPolyA.isEmpty()) {
-                    for (Motivo motivo : regionPolyA) {
+                if (utr3p.getPromoter() != null) {
 
-                        int posicionIniMotivo = motivo.getCoordenadas()[0];
-                        int posicionFinMotivo = motivo.getCoordenadas()[1];
-                        String motifID = motivo.getFactores().get(0).getID();
-                        String motifName = motivo.getFactores().get(0).getID();
+                    List<Motivo> regionPolyA = utr3p.getPromoter();
 
-                        if (hebra.equals("+")) {
-                            metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tTF_binding_site\t" + (posicionIniMotivo + referenciaGlobalCoords + 1) + "\t" + (posicionFinMotivo + referenciaGlobalCoords + 1) + "\t.\t" + metaData.get_hebra() + "\t" + "." + "\t" + "ID=" + motifID + ";Name=" + motifName + ";Parent=" + gen_ID, salidaGTF);
-                        } else {
-                            metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tTF_binding_site\t" + (referenciaGlobalCoords - posicionFinMotivo - 1) + "\t" + (referenciaGlobalCoords - posicionIniMotivo - 1) + "\t.\t" + metaData.get_hebra() + "\t" + "." + "\t" + "ID=" + motifID + ";Name=" + motifName + ";Parent=" + gen_ID, salidaGTF);
+                    if (!regionPolyA.isEmpty()) {
+                        for (Motivo motivo : regionPolyA) {
+
+                            int posicionIniMotivo = motivo.getCoordenadas()[0];
+                            int posicionFinMotivo = motivo.getCoordenadas()[1];
+                            String motifID = motivo.getFactores().get(0).getID();
+                            String motifName = motivo.getFactores().get(0).getID();
+
+                            if (hebra.equals("+")) {
+                                metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tTF_binding_site\t" + (posicionIniMotivo + referenciaGlobalCoords + 1) + "\t" + (posicionFinMotivo + referenciaGlobalCoords + 1) + "\t.\t" + metaData.get_hebra() + "\t" + "." + "\t" + "ID=" + motifID + ";Name=" + motifName + ";Parent=" + gen_ID, salidaGTF);
+                            } else {
+                                metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tTF_binding_site\t" + (referenciaGlobalCoords - posicionFinMotivo - 1) + "\t" + (referenciaGlobalCoords - posicionIniMotivo - 1) + "\t.\t" + metaData.get_hebra() + "\t" + "." + "\t" + "ID=" + motifID + ";Name=" + motifName + ";Parent=" + gen_ID, salidaGTF);
+                            }
+
                         }
-
                     }
                 }
 
@@ -3186,20 +3362,48 @@ public class Analizer {
                     numExons++;
 
                     if (hebra.equals("+")) {
-                        metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tEXON\t" + (referenciaGlobalCoords + posicionIniExon + 1) + "\t" + (referenciaGlobalCoords + posicionFinExon + 1) + "\t.\t" + metaData.get_hebra() + "\t" + "." + "\t" + "ID=" + exonID + ";Name=" + exonID + ";Parent=" + mRNA_ID, salidaGTF);
+                        metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\texon\t" + (referenciaGlobalCoords + posicionIniExon + 1) + "\t" + (referenciaGlobalCoords + posicionFinExon + 1) + "\t.\t" + metaData.get_hebra() + "\t" + "." + "\t" + "ID=" + exonID + ";Name=" + exonID + ";Parent=" + mRNA_ID, salidaGTF);
                     } else {
-                        metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tEXON\t" + (referenciaGlobalCoords - posicionFinExon - 1) + "\t" + (referenciaGlobalCoords - posicionIniExon - 1) + "\t.\t" + metaData.get_hebra() + "\t" + "." + "\t" + "ID=" + exonID + ";Name=" + exonID + ";Parent=" + mRNA_ID, salidaGTF);
+                        metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\texon\t" + (referenciaGlobalCoords - posicionFinExon - 1) + "\t" + (referenciaGlobalCoords - posicionIniExon - 1) + "\t.\t" + metaData.get_hebra() + "\t" + "." + "\t" + "ID=" + exonID + ";Name=" + exonID + ";Parent=" + mRNA_ID, salidaGTF);
                     }
 
                 }
 
             }
 
-            String transFactFileID = gen_ID + ".tf";
-            File transFTfileID = new File(transFactFileID);
-            // Se mina el archivos de abstracts que describe los eventos de regulacion inherentes al UTR5p en proceso.
-            this.listUTR5pHeader(metaData, gene, utr5p, gene.getStart().position, utr5pFileAbtsID, "5p3p", transFTfileID);
-            this.constructORFListAbts(metaData, genInformation, utr5p, gene, utr5pFileAbtsID, utr5pFileAbtsID, numObjs, numIter);
+            if (complementarios) {
+
+                String genID = metaData.get_GenID().get(0);
+                //String pathLocal = "salidas/estructuras" + "/" + red + "/" + genID;
+
+                //String transFactFileID = gen_ID + ".tf";
+                //File transFTfileID = new File(transFactFileID);
+                String pathLocal = "salidas/estructuras";
+                File path = new File(pathLocal);
+                path.mkdir();
+
+                String pathE = pathLocal + "/" + red;
+                File pathEst = new File(pathE);
+                pathEst.mkdir();
+
+                String pathE1 = pathE + "/" + genID;
+                File pathEst1 = new File(pathE1);
+                pathEst1.mkdir();
+
+                String pathEstruc = pathE1 + "/" + genID;
+                File pathEstructura = new File(pathEstruc);
+                pathEstructura.mkdir();
+
+                String transFactFileID = pathEstructura + "/" + genID + ".tf";
+                File transFTfileID = new File(transFactFileID);
+
+                transFTfileID.delete();
+
+                // Se mina el archivos de abstracts que describe los eventos de regulacion inherentes al UTR5p en proceso.
+                this.listUTR5pHeader(metaData, gene, utr5p, gene.getStart().position, utr5pFileAbtsID, "5p3p", transFTfileID);
+                this.constructORFListAbts(metaData, genInformation, utr5p, gene, utr5pFileAbtsID, utr5pFileAbtsID, numObjs, numIter);
+
+            }
 
             ref_mRNAs = ref_mRNAs + contador_UTR3ps;
             contador_UTR3ps = -1;
@@ -3288,33 +3492,38 @@ public class Analizer {
 
         for (UTR3p utr3p : utr3ps) {
 
-            if (!utr3p.getPromoter().isEmpty()) {
-                int sizeUTR3p = utr3p.getPromoter().size();
+            if (utr3p.getPromoter() != null) {
 
-                if (sizeUTR3p == 3) { // Motivo DSE
-                    mayorMotivoUTR3p = utr3p.getPromoter().get(2);
+                if (!utr3p.getPromoter().isEmpty()) {
+                    int sizeUTR3p = utr3p.getPromoter().size();
 
-                    if (coordMayorMotivoUTRs3p == -1) {
-                        coordMayorMotivoUTRs3p = mayorMotivoUTR3p.getCoordenadas()[1];
-                    } else if (mayorMotivoUTR3p.getCoordenadas()[1] > coordMayorMotivoUTRs3p) {
-                        coordMayorMotivoUTRs3p = mayorMotivoUTR3p.getCoordenadas()[1];
+                    if (sizeUTR3p == 3) { // Motivo DSE
+                        mayorMotivoUTR3p = utr3p.getPromoter().get(2);
+
+                        if (coordMayorMotivoUTRs3p == -1) {
+                            coordMayorMotivoUTRs3p = mayorMotivoUTR3p.getCoordenadas()[1];
+                        } else if (mayorMotivoUTR3p.getCoordenadas()[1] > coordMayorMotivoUTRs3p) {
+                            coordMayorMotivoUTRs3p = mayorMotivoUTR3p.getCoordenadas()[1];
+                        }
+
                     }
 
-                }
+                    if (sizeUTR3p == 2) {// Senal PolyA.
+                        mayorMotivoUTR3p = utr3p.getPromoter().get(1);
 
-                if (sizeUTR3p == 2) {// Senal PolyA.
-                    mayorMotivoUTR3p = utr3p.getPromoter().get(1);
+                        if (coordMayorMotivoUTRs3p == -1) {
+                            coordMayorMotivoUTRs3p = mayorMotivoUTR3p.getCoordenadas()[1];
+                        } else if (mayorMotivoUTR3p.getCoordenadas()[1] > coordMayorMotivoUTRs3p) {
+                            coordMayorMotivoUTRs3p = mayorMotivoUTR3p.getCoordenadas()[1];
+                        }
 
-                    if (coordMayorMotivoUTRs3p == -1) {
-                        coordMayorMotivoUTRs3p = mayorMotivoUTR3p.getCoordenadas()[1];
-                    } else if (mayorMotivoUTR3p.getCoordenadas()[1] > coordMayorMotivoUTRs3p) {
-                        coordMayorMotivoUTRs3p = mayorMotivoUTR3p.getCoordenadas()[1];
                     }
 
+                } else {
+                    coordMayorMotivoUTRs3p = utr3p.getEnd().position;
                 }
-
             } else {
-                System.out.println("Alerta: UTR3p sin region promotora");
+                coordMayorMotivoUTRs3p = utr3p.getEnd().position;
             }
         }
 
