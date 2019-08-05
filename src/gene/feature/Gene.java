@@ -636,7 +636,7 @@ public class Gene extends GenePart {
     //---------------------------------------
     @Override
     public Information getEnd() {
-        Information posF = this.exons.get(exons.size() - 1).getLastInfToGene();
+        Information posF = this.exons.get(exons.size() - 1).getEnd();
         
         return posF;
     }

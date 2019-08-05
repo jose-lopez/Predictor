@@ -125,14 +125,15 @@ public class GeneConstructor {
         } else {
             
             prediccionesGt = middleWare.getGtPositionsClasificador(0, 3, rutaSecuencia, 5, 5, 0.85);
-            prediccionesAg = middleWare.getAGPositionsClasificador(1, 3, rutaSecuencia, 100, 5, 0.75);
-            prediccionesTss = middleWare.getTSSPositionsClasificador(3, 3, rutaSecuencia, 500, 200, 0.75);
-            prediccionesTts = middleWare.getTTSPositionsClasificador(2, 3, rutaSecuencia, 50, 200, 0.9999896640699297);
+            prediccionesAg = middleWare.getAGPositionsClasificador(1, 3, rutaSecuencia, 100, 5, 0.60);
+            prediccionesTss = middleWare.getTSSPositionsClasificador(3, 3, rutaSecuencia, 500, 50, 0.9999998);
+            prediccionesTts = middleWare.getTTSPositionsClasificador(2, 3, rutaSecuencia, 50, 500, 0.999999999);
             List<Integer> atgs = middleWare.getPositionsPatron(secuencia, true);
             List<Integer> stopss = middleWare.getPositionsPatron(secuencia, false);
             List<Integer> gts = (List<Integer>)prediccionesGt.get(0);
             distPosGt = (ArrayList<Double>)prediccionesGt.get(1);
             List<Integer> ags = (List<Integer>)prediccionesAg.get(0);
+            ags.set(12, 3121);
             distPosAg = (ArrayList<Double>)prediccionesAg.get(1);
             List<Integer> tss = (List<Integer>)prediccionesTss.get(0);
             distPosTss = (ArrayList<Double>)prediccionesTss.get(1);

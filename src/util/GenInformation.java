@@ -23,11 +23,7 @@
 package util;
 
 import Libreria.Utilities;
-import gene.feature.Exon;
-import gene.feature.Gene;
 import gene.feature.Information;
-import gene.feature.UTR3p;
-import gene.feature.UTR5p;
 import gene.information.Analizer;
 import gene.information.GeneConstructor;
 import java.io.BufferedReader;
@@ -37,14 +33,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import pipeline.BioPattern;
-import pipeline.Region;
-import util.MiddleWare;
 
 public class GenInformation {
     //-- estas 4 variables boolean se utilizan para excluir lo que se va a mostrar en el archivo final, que son los atg, las paradas, los intrones y exones----
@@ -241,15 +233,17 @@ public class GenInformation {
          List<Integer> gt = new ArrayList<>(Arrays.asList(246));
          List<Integer> ag = new ArrayList<>(Arrays.asList(1121));
          List<Integer> stops = new ArrayList<>(Arrays.asList(1334));
-         List<Integer> tss = new ArrayList<>(Arrays.asList(1334));
+         List<Integer> tss = new ArrayList<>(Arrays.asList(1));
          List<Integer> tts = new ArrayList<>(Arrays.asList(1334));
          //*/
         
-         /* Coordenadas VEGA y Ensembl SST + 2000 up and down
+         /* Coordenadas VEGA SST + 2000 up and down
          List<Integer> atg = new ArrayList<>(Arrays.asList(2108));
          List<Integer> gt = new ArrayList<>(Arrays.asList(2246));
          List<Integer> ag = new ArrayList<>(Arrays.asList(3121));
          List<Integer> stops = new ArrayList<>(Arrays.asList(3334));
+         List<Integer> tss = new ArrayList<>(Arrays.asList(2000));
+         List<Integer> tts = new ArrayList<>(Arrays.asList(3493));
          //*/
 
          /* Coordenadas vector juguete
@@ -282,7 +276,7 @@ public class GenInformation {
         //String aux2 = secuenciaProceso; //se genera gen para clasificador
 
         String secuencia = metaDataGen.get_Secuencia().toString(), secuenciaDos;
-        secuencia = secuencia.replaceAll("[\\[\\]]", "");
+        secuencia = secuencia.replaceAll("[\\[2000\\]]", "");
         secuenciaDos = secuencia.replaceAll("[\\[\\]]", "");
         secuencia = secuencia.replaceAll(",", "");
         //.replaceAll("[", "").replaceAll("]", "");
@@ -304,12 +298,13 @@ public class GenInformation {
 
         Analizer analizer = new Analizer();
         //analizer.readFromLists(atg, gt, ag, stops, tss, tts, data); // Descomentar para trabajar con listas
-
-        analizer.readFromMiddleWare(middle, ilpClasificador, data, rutaGenClasificador, secuencia); // Se instancia el objeto constructor de lecturas
+        
+        // Se instancia el objeto constructor de lecturas
         // empleando las predicciones desde Prolog que estan disponibles en el objeto middle. 
         // Al salir de este metodo las listas de predicciones hechas desde prolog estan disponibles
         // en las listas atg, gt, ... del objeto constructor presente en el objeto analizer.
-        // Descomentar para trabajar con prolog.*/
+        analizer.readFromMiddleWare(middle, ilpClasificador, data, rutaGenClasificador, secuencia); // Descomentar para trabajar con prolog.
+        
         GeneConstructor constructor = analizer.getConstructor(); // Se puede acceder a las predicciones.
 
         analizer.constructLectures(false); //Se construyen los ORFs (true metodo recursivo, false interativo).
