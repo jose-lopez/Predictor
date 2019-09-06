@@ -467,9 +467,9 @@ public class MiddleWare {
     /**
      * Define el listado de sitios de GT usando clasificador Weka
      */
-    public ArrayList<Object> getTSSPositionsClasificador(int sitio, int modelo, String rutaSecuencia, int limI, int limS, double umbral) throws Exception {
+    public ArrayList<Object> getTSSPositionsClasificador(int sitio, int modelo, String rutaSecuencia, int limI, int limS, double umbral, boolean seleccionAtributos) throws Exception {
 
-        Clasificador clasificador = new Clasificador(sitio, modelo, rutaSecuencia, limI, limS, umbral);
+        Clasificador clasificador = new Clasificador(sitio, modelo, rutaSecuencia, limI, limS, umbral, seleccionAtributos);
 
         ArrayList<Object> predicciones = clasificador.clasificador();
 
@@ -518,9 +518,9 @@ public class MiddleWare {
     /**
      * Define el listado de sitios de GT usando clasificador Weka
      */
-    public ArrayList<Object> getGtPositionsClasificador(int sitio, int modelo, String rutaSecuencia, int limI, int limS, double umbral) throws Exception {
+    public ArrayList<Object> getGtPositionsClasificador(int sitio, int modelo, String rutaSecuencia, int limI, int limS, double umbral, boolean seleccionAtributos) throws Exception {
 
-        Clasificador clasificador = new Clasificador(sitio, modelo, rutaSecuencia, limI, limS, umbral);
+        Clasificador clasificador = new Clasificador(sitio, modelo, rutaSecuencia, limI, limS, umbral,seleccionAtributos);
 
         ArrayList<Object> prediccionesGT = clasificador.clasificador();
 
@@ -573,9 +573,9 @@ public class MiddleWare {
     /**
      * Define el listado de sitios de GT usando clasificador Weka
      */
-    public ArrayList<Object> getAGPositionsClasificador(int sitio, int modelo, String rutaSecuencia, int limI, int limS, double umbral) throws Exception {
+    public ArrayList<Object> getAGPositionsClasificador(int sitio, int modelo, String rutaSecuencia, int limI, int limS, double umbral, boolean seleccionAtributos) throws Exception {
 
-        Clasificador clasificador = new Clasificador(sitio, modelo, rutaSecuencia, limI, limS, umbral);
+        Clasificador clasificador = new Clasificador(sitio, modelo, rutaSecuencia, limI, limS, umbral, seleccionAtributos);
 
         ArrayList<Object> predicciones = clasificador.clasificador();
 
@@ -633,9 +633,9 @@ public class MiddleWare {
     /**
      * Define el listado de sitios de GT usando clasificador Weka
      */
-    public ArrayList<Object> getTTSPositionsClasificador(int sitio, int modelo, String rutaSecuencia, int limI, int limS, double umbral) throws Exception {
+    public ArrayList<Object> getTTSPositionsClasificador(int sitio, int modelo, String rutaSecuencia, int limI, int limS, double umbral, boolean seleccionAtributos) throws Exception {
 
-        Clasificador clasificador = new Clasificador(sitio, modelo, rutaSecuencia, limI, limS, umbral);
+        Clasificador clasificador = new Clasificador(sitio, modelo, rutaSecuencia, limI, limS, umbral, seleccionAtributos);
 
         ArrayList<Object> predicciones = clasificador.clasificador();
 

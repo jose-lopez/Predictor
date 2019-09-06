@@ -124,16 +124,15 @@ public class GeneConstructor {
                     middleWare.getGenData());*/
         } else {
             
-            prediccionesGt = middleWare.getGtPositionsClasificador(0, 3, rutaSecuencia, 5, 5, 0.85);
-            prediccionesAg = middleWare.getAGPositionsClasificador(1, 3, rutaSecuencia, 100, 5, 0.60);
-            prediccionesTss = middleWare.getTSSPositionsClasificador(3, 3, rutaSecuencia, 500, 50, 0.9999998);
-            prediccionesTts = middleWare.getTTSPositionsClasificador(2, 3, rutaSecuencia, 50, 500, 0.999999999);
+            prediccionesGt = middleWare.getGtPositionsClasificador(0, 1, rutaSecuencia, 5, 5, 0.85, false);
+            prediccionesAg = middleWare.getAGPositionsClasificador(1, 1, rutaSecuencia, 5, 5, 0.75, false);
+            prediccionesTss = middleWare.getTSSPositionsClasificador(3, 1, rutaSecuencia, 500, 50, 0.9999404840371321, false);
+            prediccionesTts = middleWare.getTTSPositionsClasificador(2, 1, rutaSecuencia, 50, 500, 0.998147, false);
             List<Integer> atgs = middleWare.getPositionsPatron(secuencia, true);
             List<Integer> stopss = middleWare.getPositionsPatron(secuencia, false);
             List<Integer> gts = (List<Integer>)prediccionesGt.get(0);
             distPosGt = (ArrayList<Double>)prediccionesGt.get(1);
-            List<Integer> ags = (List<Integer>)prediccionesAg.get(0);
-            ags.set(12, 3121);
+            List<Integer> ags = (List<Integer>)prediccionesAg.get(0);            
             distPosAg = (ArrayList<Double>)prediccionesAg.get(1);
             List<Integer> tss = (List<Integer>)prediccionesTss.get(0);
             distPosTss = (ArrayList<Double>)prediccionesTss.get(1);

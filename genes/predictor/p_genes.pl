@@ -67,6 +67,12 @@
 
 % gen(G), p_gener(G, Patgs, Pgt, Pag, Ppar, Pint, Gen, R).
 
+:- discontiguous p_atgs/4.
+
+:- discontiguous atgs/4.
+
+:- discontiguous buscar/4.
+
 %%%%%%%%%%%% PREDICTORES: ATG, GT, AG, Paradas, Intrones y Gen
 
 
@@ -163,7 +169,7 @@ p_gen(Secuencia, Patg, Pintrones, Ppar, RFSecuencia):-
 	senal_atg(Secuencia, 'atg', Patg, RSecuencia1),
 	(Patg==[]-> PR = 0; PR is Patg + 3),
  	p_intrones(RSecuencia1, Pintrones, RSecuencia2, PR),
-	senal_par(RSecuencia2, Senalp, PparR, RFSecuencia),!,
+	senal_par(RSecuencia2, _, PparR, RFSecuencia),!,
 	length(Secuencia,LS), length(RSecuencia2,LRs2),
         (PparR==[]-> Ppar = []; Ppar is (LS - LRs2 + PparR + 3)),
 	write_triple('posiciones_gen.txt', Patg, Pintrones, Ppar).
@@ -255,8 +261,8 @@ conservados_atg(Secuencia, Senal, Direccion, Posicion, Resto):-
 
 % reglas catgx aprendidas en la primera etapa de aprendizaje.
 
-	catgi(Z) :- b(n,Z,F).
-	catgd(Z) :- b(n,Z,F).
+	catgi(Z) :- b(n,Z,_).
+	catgd(Z) :- b(n,Z,_).
 
 	
 
@@ -341,7 +347,7 @@ conservados_par(Secuencia, Senal, Direccion, Posicion, Resto):-
 
 	%cpard(Z) :- b(y,Z,_).
 
-	cpari(Z) :- b(n,Z,A).
+	cpari(Z) :- b(n,Z,_).
 	cpard(Z) :- b(n,Z,_).
 
 
@@ -436,7 +442,7 @@ at(A, B):-
 %%%%%%%%%%%%%%%% Comprueba si hay regularidad por transicion GC %%%%%%%%%%%%%%%%%%%%%%%%%%%
 trans_GC(Secuencia, Posicion, Senal, Tipo_trans, ZD):-
 	limite(Limite), 
-	zonas(Secuencia, Limite, Limite, Senal, Posicion, ZI, ZD), Resto_Secuencia = ZD,
+	zonas(Secuencia, Limite, Limite, Senal, Posicion, ZI, ZD), % Resto_Secuencia = ZD,
 	proporcion(ZI, 'gc', PI), proporcion(ZD, 'gc', PD),
 	relacion(PI, PD, R),!,
 	tipo_trans(R, Trans),
@@ -499,7 +505,7 @@ analisis_bloque_AT(Secuencia, Tipo, Posicion, Bloque):- % Devuelve el tamaño de
 analisis_bloque_AT(Secuencia, Tipo, Posicion, Bloque):-
 	Tipo == 'inmediato', 
 	dAT(Posicion, Secuencia, Resto_S), % Busca el primero dimero AT y devuelve la posicion en la que se encuentra.
-	Posicion == 0 -> bloque_AT(Resto_S, Bloque), Bloque is (NBloque + 2).
+	Posicion == 0 -> bloque_AT(Resto_S, Bloque).
 
 bloque_AT(Secuencia, Bloque):- 
 	es_AT(Secuencia, Resto)-> bloque_AT(Resto, NBloque), Bloque is (2 +  NBloque).
@@ -711,7 +717,7 @@ consenso_poliadenil(Secuencia, Limite, Posicion, Resto):-
 	var(Posicion),
 	aataaa(Posicion, Secuencia, Resto), V is Limite - 6, Posicion =< V.	 
 
-consenso_poliadenil(Secuencia, Limite, Posicion, Resto):-
+consenso_poliadenil(Secuencia, _, Posicion, Resto):-
 	not(var(Posicion)),
 	posicionar(Secuencia, 0, Posicion, D),
 	aataaa(0, D, Resto).

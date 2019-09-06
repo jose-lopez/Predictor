@@ -189,6 +189,7 @@ public class GenInformation {
             this.guardar_2(escritura, au);
             //---llama a la funcion genera que es la que genera las lecturas en el archivo de salida-------------          
             this.generaLects("tem", gff3EnsEPD, gff3Predictor, ilpinr, consensos, reporteAbs, numObjs, numIter, ilpClasificador, red);
+            
             au.delete();
         }
 
@@ -228,58 +229,45 @@ public class GenInformation {
 
     public void generaLects(String entrada, File gff3EnsemblEPDExt, File gff3Predictor, boolean iLPinr, boolean consensos, boolean reporteAbs, int numObjs, int numIter, boolean ilpClasificador, String red) throws IOException, Exception {
 
-        /* Coordenadas VEGA y Ensembl SST
+        /* Coordenadas VEGA y Ensembl SST sin RR
          List<Integer> atg = new ArrayList<>(Arrays.asList(108));
          List<Integer> gt = new ArrayList<>(Arrays.asList(246));
          List<Integer> ag = new ArrayList<>(Arrays.asList(1121));
          List<Integer> stops = new ArrayList<>(Arrays.asList(1334));
          List<Integer> tss = new ArrayList<>(Arrays.asList(1));
-         List<Integer> tts = new ArrayList<>(Arrays.asList(1334));
+         List<Integer> tts = new ArrayList<>(Arrays.asList(1493));
          //*/
         
-         /* Coordenadas VEGA SST + 2000 up and down
+         //* Coordenadas VEGA SST con RR + 2000 up and down
          List<Integer> atg = new ArrayList<>(Arrays.asList(2108));
          List<Integer> gt = new ArrayList<>(Arrays.asList(2246));
          List<Integer> ag = new ArrayList<>(Arrays.asList(3121));
          List<Integer> stops = new ArrayList<>(Arrays.asList(3334));
-         List<Integer> tss = new ArrayList<>(Arrays.asList(2000));
+         List<Integer> tss = new ArrayList<>(Arrays.asList(2001));
          List<Integer> tts = new ArrayList<>(Arrays.asList(3493));
          //*/
 
-         /* Coordenadas vector juguete
-         List<Integer> atg = new ArrayList<>(Arrays.asList(5));
-         List<Integer> gt = new ArrayList<>(Arrays.asList(23));
-         List<Integer> ag = new ArrayList<>(Arrays.asList(38));
-         List<Integer> stops = new ArrayList<>(Arrays.asList(56));
-         //*/
-
-        //*/
-
-
-        //---------------------Nombre de los archivos------------------------------------------------
-        String url_archivo_entrada = entrada; // url del Archivo de entrada de la base de datos de internet se puede usar args[0]
-        String url_archivo_middle = "gen_prueba.pl";     // url gen problema que se usa para la clase Middle
-        String rutaGen = "salidas/gen.txt";     // url gen problema que se usa para la clase Middle
-        String rutaGenClasificador = "salidas/genCla.txt";     // url gen problema que se usa para la clase Middle
+        String archivo_entrada = entrada;
+        String archivo_middle = "gen_prueba.pl";  // gen problema que se usa para la clase Middle
+        String rutaGen = "salidas/gen.txt";     
+        String rutaGenClasificador = "salidas/genCla.txt";     
         
         
         //------------------Archivos-------------------------------------------------------------------
-        File genes = new File(url_archivo_middle);// archivo .pl de entrada a la clase middle
-        File gen = new File(rutaGen);// archivo .pl de entrada a la clase middle
-        File genDos = new File(rutaGenClasificador);// archivo .pl de entrada a la clase middle
+        File genes = new File(archivo_middle);// archivo .pl de entrada a la clase middle
+        File gen = new File(rutaGen);
+        File genDos = new File(rutaGenClasificador);// archivo gen de entrada para el clasificador
 
-        Utilities metaDataGen = new Utilities(url_archivo_entrada, hebra);
+        Utilities metaDataGen = new Utilities(archivo_entrada, hebra); // objeto prara procesar metadatos del gen en proceso.
         
         //--------------------Codigo para generar el archivo de entrada al Middle-----------------------
         String secuenciaProceso = metaDataGen.get_Secuencia().get(0);
-        String aux = "gen(" + secuenciaProceso + ")."; //se genera gen_prueba
-        //String aux2 = secuenciaProceso; //se genera gen para clasificador
+        String aux = "gen(" + secuenciaProceso + ")."; //se genera gen_prueba        
 
         String secuencia = metaDataGen.get_Secuencia().toString(), secuenciaDos;
         secuencia = secuencia.replaceAll("[\\[2000\\]]", "");
         secuenciaDos = secuencia.replaceAll("[\\[\\]]", "");
         secuencia = secuencia.replaceAll(",", "");
-        //.replaceAll("[", "").replaceAll("]", "");
 
         genes.delete();
         gen.delete();
@@ -292,36 +280,38 @@ public class GenInformation {
         List<String> data;
         data = readGene(rutaGen);
 
-        MiddleWare middle = new MiddleWare(); // este es el objero de clase midddleware que conecta con el predictor
+        MiddleWare middle = new MiddleWare(); // Este es el objero de clase midddleware que conecta con el predictor prolog
 
-        middle.init("p_genes.pl"); //Se inicializa el objeto predictor con el codigo del predictor.
+        middle.init("p_genes.pl"); //Se inicializa el objeto predictor con el codigo del .pl del predictor.
 
         Analizer analizer = new Analizer();
-        //analizer.readFromLists(atg, gt, ag, stops, tss, tts, data); // Descomentar para trabajar con listas
         
-        // Se instancia el objeto constructor de lecturas
-        // empleando las predicciones desde Prolog que estan disponibles en el objeto middle. 
-        // Al salir de este metodo las listas de predicciones hechas desde prolog estan disponibles
+        // Descomentar para trabajar con las listas de arriba
+        //analizer.readFromLists(atg, gt, ag, stops, tss, tts, data); 
+        
+        // Al salir de este metodo las listas de predicciones hechas desde prolog/clasificador estan disponibles
         // en las listas atg, gt, ... del objeto constructor presente en el objeto analizer.
         analizer.readFromMiddleWare(middle, ilpClasificador, data, rutaGenClasificador, secuencia); // Descomentar para trabajar con prolog.
         
-        GeneConstructor constructor = analizer.getConstructor(); // Se puede acceder a las predicciones.
+        GeneConstructor constructor = analizer.getConstructor(); // Se podra' acceder a las clasificaciones para construir los ORFs.
 
-        analizer.constructLectures(false); //Se construyen los ORFs (true metodo recursivo, false interativo).
+            analizer.constructLectures(false); //Se construyen los ORFs (true: metodo recursivo, false: metodo interativo).
 
         System.out.println("" + analizer.toString()); // Se imprimen en consola todos los intrones y exones hallados.
 
-        if (!analizer.getLectures().isEmpty()) {
+        if (!analizer.getLectures().isEmpty()) {// Si gay ORFs entonces:
 
             System.out.println("Numero de ORFs: " + analizer.getLectures().size());
 
-            if (this.isGT()) {
-                analizer.constructRegionUTR5p(metaDataGen, this, iLPinr, consensos); // pasar iLPinr = false implica que se proponen TSSs por consensos.
+            if (this.isGT()) { // Si se desea armar trnscritos, entonces se definen posibles UTR5' y UTR3' para cada ORF.
+                analizer.constructRegionUTR5p(metaDataGen, this, iLPinr, consensos); // pasar iLPinr = false implica que se proponen TSSs por consensos INR.
                 analizer.constructRegionUTR3p(metaDataGen, this, iLPinr);
             }            
             
+            // Se genera el reporte comparativo usando anotaciones desde Ensembl y EPD
             analizer.lectsEnsemblEpd(metaDataGen, gff3EnsemblEPDExt, reporteAbs, this);
-
+            
+            // Se genera el reporte comparativo usando anotaciones del predictor
             analizer.lectsToGFF3(metaDataGen, gff3Predictor, reporteAbs, this, numObjs, numIter, red, this.isComplementarios());
 
             metaDataGen.guardar("\n", gff3Predictor);

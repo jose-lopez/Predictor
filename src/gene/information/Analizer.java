@@ -271,16 +271,16 @@ public class Analizer {
             motivoSupCoordenadas = inicioATG - Model.maxUTR5p;
 
             if (motivoSupCoordenadas < 0) {
-                
+
                 motivoSupCoordenadas = 0;
                 distMin = 0;
                 distMax = inicioATG - Model.minUTR5p;
-                
+
             } else {
-                
+
                 distMin = 0;
                 distMax = inicioATG - Model.minUTR5p;
-                
+
             }
 
         }
@@ -330,36 +330,28 @@ public class Analizer {
         boolean utr5pDefined = false;
         ArrayList<Integer> coordsTSS = new ArrayList<>();
 
-        for (Gene lectura : lectures) {
+        for (Gene lectura : lectures) { // Cada lectura es un ORF
 
-            Information inicioATG = lectura.getStart();
-            //Information inicioUTR5p = constructor.getData(232);
+            Information inicioATG = lectura.getStart();            
             System.out.println("inicioATG:" + inicioATG.position);
             List<Information> regionExplorar = constructor.getInnerInfo(0, inicioATG.position);
             String regionAdnUTR5p = regionExplorar.toString();
             regionAdnUTR5p = regionAdnUTR5p.replaceAll("\\[", "").replaceAll(",", "").replaceAll("\\]", "").replaceAll(" ", "");
 
-            // Se preparan los datos a pasar al pipeline
+            // Se prepara la region que contiene a los posibles UTR5'
             regionAdnUTR5p = regionAdnUTR5p.toUpperCase();
             File fileRegionUTR5p = new File("regionUTR5p.txt");
             fileRegionUTR5p.delete();
             metaData.guardar(regionAdnUTR5p, fileRegionUTR5p);
-
-            // Se invoca al pipeline quien devuelve la region con el promotor propuesto para la secuencia problema.
-            // El promotor es una coleccion de motivos, cada uno con la coleccion de factores de transcripcion
-            // que le reconocen. Alli deben estar los factores que definen un core promoter.
-            // En el array corePromoters estan los promotores que estan del lado izquierdo de la caja TATA y que la 
-            // incluyen (cis promoters).
+            
             Region regionPromotora = new Region(regionAdnUTR5p);
 
             ArrayList<ArrayList<Motivo>> corePromoters;
-            ArrayList<ArrayList<Motivo>> corePromotersInr = new ArrayList<>();
-            ArrayList<ArrayList<Motivo>> corePromotersInrDPE = new ArrayList<>();
-
+            
             if (consensos) { // Si consensos = true, se construye region promotora por consensos.
                 regionPromotora.constructPromotorConsensos(regionAdnUTR5p, true);//  False construye promotor para region UTR3p.
 
-            } else {
+            } else { // Si cnsensos es false se construye mediante FT obtenidos desde BioPattern.
                 BioPattern pipeline = new BioPattern(regionAdnUTR5p, regionAdnUTR5p);
                 regionPromotora = pipeline.pipelineBioPatternRP("regionUTR5p.txt", "0.90", 0, 0);
 
@@ -391,7 +383,7 @@ public class Analizer {
             //int distanciaMaxInr_DPE = 32;
             //int sizeCorePromoter;
             int coordTSS;
-            int minUTR5p = 0;
+            int minUTR5p;
 
             if (!corePromoters.isEmpty()) {
 
@@ -410,7 +402,7 @@ public class Analizer {
                         //coordsTSS.add(coordTTS);
                     } else { // La coordenada TSS se define por consenso Inr, distancia DPE o modelo clasificador.
 
-                        Motivo motivoInrDPE = null;
+                        Motivo motivoInrDPE=null;
                         Motivo motivoDPE = null;
 
                         Motivo motivoSup = corePromoter.get(corePromoter.size() - 1);
@@ -431,16 +423,12 @@ public class Analizer {
                                 System.out.println("El Gen " + metaData.get_GenID().get(0) + " posee caja DPE en coordenada: " + motivoDPE.getCoordenadas()[0]);
                             }
 
-                            // Se asigna UTRs5p al core promoter en curso para lectura.
-                            // 
+                            // Se asigna UTR5' al core promoter en curso para lectura u ORF en curso.
                             minUTR5p = inicioATG.position - coordTSS;
 
                             if ((minUTR5p >= Model.minUTR5p) && (minUTR5p <= Model.maxUTR5p)) {
-
-                                //if (!coordsTSS.contains(coordTSS)) { //!!!! Ojo si se pueden repetir TSSs si hay diferentes TTSs
-                                    utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, corePromoter);
-                                    coordsTSS.add(coordTSS);
-                                //}
+                                utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, corePromoter);
+                                coordsTSS.add(coordTSS);
                             }
 
                         } else if (motivoSup.getCore().equals("DPE-tata-like")) {
@@ -454,19 +442,15 @@ public class Analizer {
                             minUTR5p = inicioATG.position - coordTSS;
 
                             if ((minUTR5p >= Model.minUTR5p) && (minUTR5p <= Model.maxUTR5p)) {
-
-                                //if (!coordsTSS.contains(coordTSS)) {
-                                    utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, corePromoter);
-                                    coordsTSS.add(coordTSS);
-                                //}
+                                utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, corePromoter);
+                                coordsTSS.add(coordTSS);
                             }
 
                         }
 
                         if (!posiblesMotivosInrDPE.isEmpty() && (coordTSS == 0)) {
 
-                            motivoInrDPE = definirCoordInrDPETSS(corePromoter, posiblesMotivosInrDPE, true);
-                            //motivoInrDPE = null;
+                            motivoInrDPE = definirCoordInrDPETSS(corePromoter, posiblesMotivosInrDPE, true);                            
 
                             if (motivoInrDPE != null) {
 
@@ -478,9 +462,8 @@ public class Analizer {
 
                                 if ((minUTR5p >= Model.minUTR5p) && (minUTR5p <= Model.maxUTR5p)) {
 
-                                    //motivoInrDPE.setCore("Inr");
                                     corePromoter.add(motivoInrDPE);
-                                    //corePromotersInr.add(corePromoter);
+                                    
                                     System.out.println("El Gen " + metaData.get_GenID().get(0) + " posee caja Inr en coordenada: " + coordTSS);
 
                                     // Se define motivo DPE para el core promoter en curso.
@@ -489,12 +472,10 @@ public class Analizer {
                                     if (motivoDPE != null) {
                                         motivoDPE.setCore("DPE");
                                         corePromoter.add(motivoDPE);
-                                        //corePromotersInrDPE.add(corePromoter);
                                         System.out.println("El Gen " + metaData.get_GenID().get(0) + " posee caja DPE en coordenada: " + motivoDPE.getCoordenadas()[0]);
                                     }
 
-                                    // Se asigna UTRs5p al core promoter en curso para lectura.
-                                    // && !coordsTSS.contains(coordTSSp1EPD)
+                                    // Se asigna UTRs5p al core promoter en curso para lectura.                                  
                                     utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, corePromoter);
                                     coordsTSS.add(coordTSS);
                                 }
@@ -502,7 +483,7 @@ public class Analizer {
                             } else {
 
                                 motivoDPE = definirCoordInrDPETSS(corePromoter, posiblesMotivosInrDPE, false);
-                                //motivoDPE = null;
+                                
                                 if (motivoDPE != null) {
 
                                     coordTSS = definirTSS(motivoSup, motivoDPE.getCoordenadas()[0], constructor);
@@ -512,7 +493,6 @@ public class Analizer {
                                     if ((minUTR5p >= Model.minUTR5p) && (minUTR5p <= Model.maxUTR5p)) {
                                         motivoDPE.setCore("DPE");
                                         corePromoter.add(motivoDPE);
-                                        //corePromotersInrDPE.add(corePromoter);
                                         System.out.println("El Gen " + metaData.get_GenID().get(0) + " posee caja DPE en coordenada: " + motivoDPE.getCoordenadas()[0]);
 
                                         utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, corePromoter);
@@ -544,7 +524,6 @@ public class Analizer {
 
                         } else if (coordTSS == 0) {  // Dado que no hay Inr o DPE posibles, aqui se aplicaran modelos para asignar TSS 
                             // delante del core promoter y antes del ATG
-
                             /*
                                 Para asignar coordTSS se empleara metodo que reciba el motivo mas a la derecha
                                 del corepromoter y la coordenada del ATG y, entre ambas, se asignara el mejor TSS segun los TSS
@@ -574,10 +553,8 @@ public class Analizer {
 
                     if ((minUTR5p >= Model.minUTR5p) && (minUTR5p <= Model.maxUTR5p)) {
                         String core = "no-promoter";
-                        //if (!coordsTSS.contains(coordTSS)) { //!!!! Ojo si se pueden repetir TSSs si hay diferentes TTSs
-                            utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, null);
-                            coordsTSS.add(coordTSS);
-                        //}
+                        utr5pDefined = asignarILPUTRs5p(lectura, core, coordTSS, inicioATG, genInformation, null);
+                        coordsTSS.add(coordTSS);
                     }
                 }
 
@@ -627,6 +604,7 @@ public class Analizer {
 
         // Se preparan los datos a pasar al pipeline
         regionPromotoraORF = regionPromotoraORF.toUpperCase();
+        
         String regionUTR5p = pathEstructura + "/" + estructura + ".rg";
         File fileRegionUTR5p = new File(regionUTR5p);
         fileRegionUTR5p.delete();
@@ -905,8 +883,7 @@ public class Analizer {
                          }
                          //coordsTSS.add(coordTTS);*/
                     } else // La coordenada TTS se define por transicion GC o distancia estadistica.
-                    {
-                        if (!posiblesMotivosDSE.isEmpty()) {
+                     if (!posiblesMotivosDSE.isEmpty()) {
 
                             Motivo motivoDSE = definirMotivoDSE(uTR3CorePromoter, posiblesMotivosDSE);
 
@@ -920,8 +897,8 @@ public class Analizer {
 
                                     // Se asigna UTRs5p al core promoter en curso para lectura.
                                     //if (!coordsTTS.contains(coordTTS)) {
-                                        utr3pDefined = asignarILPUTRs3p(lectura, coordTTS, stop, uTR3CorePromoter);
-                                        coordsTTS.add(coordTTS);
+                                    utr3pDefined = asignarILPUTRs3p(lectura, coordTTS, stop, uTR3CorePromoter);
+                                    coordsTTS.add(coordTTS);
                                     //}
                                 }
                             } else {
@@ -934,8 +911,8 @@ public class Analizer {
 
                                     // Se asigna UTRs5p al core promoter en curso para lectura.
                                     //if (!coordsTTS.contains(coordTTS)) {
-                                        utr3pDefined = asignarILPUTRs3p(lectura, coordTTS, stop, uTR3CorePromoter);
-                                        coordsTTS.add(coordTTS);
+                                    utr3pDefined = asignarILPUTRs3p(lectura, coordTTS, stop, uTR3CorePromoter);
+                                    coordsTTS.add(coordTTS);
                                     //}
                                 }
                             }
@@ -949,12 +926,11 @@ public class Analizer {
 
                                 // Se asigna UTRs5p al core promoter en curso para lectura.
                                 //if (!coordsTTS.contains(coordTTS)) {
-                                    utr3pDefined = asignarILPUTRs3p(lectura, coordTTS, stop, uTR3CorePromoter);
-                                    coordsTTS.add(coordTTS);
+                                utr3pDefined = asignarILPUTRs3p(lectura, coordTTS, stop, uTR3CorePromoter);
+                                coordsTTS.add(coordTTS);
                                 //}
                             }
                         }
-                    }
                 }
             } else {
 
@@ -966,8 +942,8 @@ public class Analizer {
 
                     // Se asigna UTRs5p al core promoter en curso para lectura.
                     //if (!coordsTTS.contains(coordTTS)) {
-                        utr3pDefined = asignarILPUTRs3p(lectura, coordTTS, stop, null);
-                        coordsTTS.add(coordTTS);
+                    utr3pDefined = asignarILPUTRs3p(lectura, coordTTS, stop, null);
+                    coordsTTS.add(coordTTS);
                     //}
                 }
 
@@ -1014,7 +990,7 @@ public class Analizer {
         Information finUTR5p = constructor.getData(inicioATG.position - 1);
         List<Information> innerInfoUTR5p = constructor.getInnerInfo(inicioPlus1.position + 1, finUTR5p.position);
         Gene utr5p = new Gene(inicioPlus1, finUTR5p, innerInfoUTR5p);
-        
+
         Information inicioExon = constructor.getData(coordTSS + 1);
         Information finExon = constructor.getData(inicioATG.position - 1);
         List<Information> innnerExon = constructor.getInnerInfo(inicioExon.position + 1, finExon.position);
@@ -3190,7 +3166,7 @@ public class Analizer {
             } else {
                 utr3pdefined = false;
             }
-            
+
             String gen_ID = "gen-" + cont_lects;
             //*
             if (utr5pdefined && utr3pdefined) {// Se reporta el caso de transcritos con UTRs5p y UTRs3p
@@ -3223,7 +3199,7 @@ public class Analizer {
         List<UTR3p> utr3ps = gene.getUtr3p();
         int contador_UTR5ps = -1;
         int contador_UTR3ps = -1;
-        
+
         int ref_mRNAs = 0, mRNAs;
 
         String utr5pFileAbtsID;
@@ -3332,9 +3308,9 @@ public class Analizer {
 
                     posicionIniExon = cds.getStart().position;
                     posicionFinExon = cds.getEnd().position;
-                    
+
                     longExon = cds.getInnerInfo().size();
-                    
+
                     if (cantCDSs == 1) {
                         cuadratura = 0;
                     } else {
@@ -3610,7 +3586,7 @@ public class Analizer {
             metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\tthree_prime_UTR\t" + posIniUTR3p + "\t" + posFinUTR3p + "\t.\t" + metaData.get_hebra() + "\t.\tID=" + utr3pID + ";Name=" + utr3pID + ";Parent=" + mRNA_ID, salidaGTF);
 
             // Se reportan los motivos de la region de poliadenilacion asociados al UTR3p en curso.
-            if (regionPolyA!=null) {
+            if (regionPolyA != null) {
                 for (Motivo motivo : regionPolyA) {
 
                     int posicionIniMotivo = motivo.getCoordenadas()[0] + referenciaGlobalCoords + 1;
@@ -3674,10 +3650,10 @@ public class Analizer {
                 metaData.guardar(metaData.get_Cromosoma().get(0) + "\tPredictorILP\texon\t" + posicionIniExon + "\t" + posicionFinExon + "\t.\t" + metaData.get_hebra() + "\t" + "." + "\t" + "ID=" + exonID + ";Name=" + exonID + ";Parent=" + mRNA_ID, salidaGTF);
 
             }
-            
+
             //ref_mRNAs = ref_mRNAs + contador_UTR3ps;
         }
-        
+
         return ++cont_lects;
     }
 
@@ -3732,7 +3708,7 @@ public class Analizer {
             }
 
             // Se reportan los motivos del core promoter contenidos en el UTR5p en curso.
-            if (corePromoter!=null) {
+            if (corePromoter != null) {
                 for (Motivo motivo : corePromoter) {
 
                     int posicionIniMotivo = motivo.getCoordenadas()[0];
@@ -3841,7 +3817,6 @@ public class Analizer {
             //ref_mRNAs = ref_mRNAs + ++contador_UTR5ps;
         }
 
-        
         return ++cont_lects;
 
     }

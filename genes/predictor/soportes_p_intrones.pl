@@ -1,5 +1,8 @@
 % metodo para escribir en un archivo desde progol
 % Benjamin Johnston "http://objectmix.com/prolog/183044-%5Bswi-prolog%5D-read-write-file-how.html"
+
+:- discontiguous buscar/4. 
+
 write_triple(File, A, B, C) :-
 open(File, write, Stream),
 write(Stream, (A,B,C)),
@@ -121,7 +124,7 @@ zonas(Secuencia, LI, LD, Senal, Posicion, ZI, ZD, D):-
 	( (Posicion=='null'->ZI=I,ZD=D);
         ( reverse(I, NI), length(NI, TI), length(D, TD),
 	( ( TI =< LI -> NZI = NI ); posicionar(NI, 0, LI, NZI, _) ),!, reverse(NZI, ZI),
-	( ( TD =< LD -> ZD = D ); posicionar(D, 0, LD, ZD, Resto) ), ! )).
+	( ( TD =< LD -> ZD = D ); posicionar(D, 0, LD, ZD, _) ), ! )).
 
 zonas(Secuencia, LI, LD, Senal, Posicion, ZI, ZD):- 
 	patron(Senal, Patron),
@@ -156,7 +159,7 @@ senal_es([F|R], N, [P|RP], D, Patron, [F|Izq], Der) :-
   senal_es(R, NN, [P|RP], D, Patron, Izq, Der),
   N is NN + 1.
 
-senal_es([F|R], N, [P|RP], D, Patron, Izq, Der) :-
+senal_es([F|R], N, [P|_], D, Patron, Izq, Der) :-
   F \== P, D \== 0, posicionar(Patron, 0, D, I, _),
   senal_es([F|R], N, Patron, 0, Patron, NIzq, Der),
   append(I,NIzq,Izq).
@@ -189,7 +192,7 @@ avanz_pos([B|NBss], NBss) :- base(B).
 posicionar([], _, _, []).
 posicionar(_, I, N, _) :- I > N, !, fail.
 posicionar(R, I, N, R) :- I == N, !.
-posicionar([F|R], I, N, RR ) :- II is I+1, posicionar(R, II, N, RR).
+posicionar([_|R], I, N, RR ) :- II is I+1, posicionar(R, II, N, RR).
 
 % Posiciona la busqueda en un punto especifico (N) y devuelve las secuencia a la izquierda y derecha
 posicionar([], _, _, [], []).
@@ -243,7 +246,7 @@ polimeros(Polimero, Secuencia, Direccion, Senal, Posicion, Proporcion):-  %Canti
 
 buscar(Secuencia, Polimero, Limite, Cantidad):-   % cantidad contiene el numero de polimeros ryry en en la Secuencia, hasta Limite.
 	Polimero == 'a',     		  % En este caso interesa  analizar el dimero 'aa'.
-	a(Posicion, Secuencia, Resto), V is Limite - 1, Posicion < V,	  % Busca primer dimero 'aa' y devuelve su posicion. Resto_S no incluye al dimero hallado.
+	a(Posicion, Secuencia, Resto), V is Limite - 1, Posicion < V,
 	(NLimite is (Limite - (Posicion + 1))),
 	( NLimite > 0  -> ( buscar(Resto, Polimero, NLimite, NCantidad), (Cantidad is 1 + NCantidad) ) ; (Cantidad is 1) ).
 

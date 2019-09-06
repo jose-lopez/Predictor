@@ -36,7 +36,7 @@ public class PredictorILP {
     public static void main(String[] args) throws Exception {
         
         //String genesEnProceso = "salidas/pruebasPaper.txt";
-        String genesEnProceso = "salidas/entrada.txt";
+        String genesEnProceso = "entrada.txt";
         String idsGenesEnProceso = "ensemblIDs.txt"; 
         String salidaPredGFF3 = "salidas/salidaPredictor.gff3";
         String salidaEnsEPDGFF3 = "salidas/salidaEnsblEPD.gff3";
@@ -47,7 +47,7 @@ public class PredictorILP {
         // puede tener mas de una lectura (estructura) asociada. Se indica ademas si el reporte GTF va a incluir
         // los atg, las paradas, los exones y los intrones----. El argumento "completo" indica que se genere reporte GTF
         // para cada lectura obtenida para la secuencia problema.
-        GenInformation generador = new GenInformation("-", "1", true, true, false, true, Boolean.parseBoolean(args[11]), Boolean.parseBoolean(args[12]), Boolean.parseBoolean(args[13]), Boolean.parseBoolean(args[14]));
+        GenInformation generador = new GenInformation(args[15], "1", true, true, false, true, Boolean.parseBoolean(args[11]), Boolean.parseBoolean(args[12]), Boolean.parseBoolean(args[13]), Boolean.parseBoolean(args[14]));
      
 
         //------llamamos al inicio al cual le vamos a enviar los url de los archivos ---
