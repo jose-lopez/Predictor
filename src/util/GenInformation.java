@@ -1,4 +1,4 @@
- /*
+/*
  GenInformation.java
  Esta clase es la que construtuye el archivo de lecturas utilizando la clase Middle, esta a su vez es la que conecta con prolog--------
 
@@ -170,7 +170,6 @@ public class GenInformation {
         auxRegistrosEnsembl.guardar(versionGFF + encabRegion, gff3Predictor);
         auxRegistrosEnsembl.guardar(versionGFF + encabRegion, gff3EnsEPD);
 
-
         int genIDsize = auxRegistrosEnsembl.get_GenID().size();
         for (int i = 0; i < genIDsize; i++) {
             au.delete();
@@ -189,7 +188,7 @@ public class GenInformation {
             this.guardar_2(escritura, au);
             //---llama a la funcion genera que es la que genera las lecturas en el archivo de salida-------------          
             this.generaLects("tem", gff3EnsEPD, gff3Predictor, ilpinr, consensos, reporteAbs, numObjs, numIter, ilpClasificador, red);
-            
+
             au.delete();
         }
 
@@ -237,29 +236,27 @@ public class GenInformation {
          List<Integer> tss = new ArrayList<>(Arrays.asList(1));
          List<Integer> tts = new ArrayList<>(Arrays.asList(1493));
          //*/
-        
-         //* Coordenadas VEGA SST con RR + 2000 up and down
-         List<Integer> atg = new ArrayList<>(Arrays.asList(2108));
-         List<Integer> gt = new ArrayList<>(Arrays.asList(2246));
-         List<Integer> ag = new ArrayList<>(Arrays.asList(3121));
-         List<Integer> stops = new ArrayList<>(Arrays.asList(3334));
-         List<Integer> tss = new ArrayList<>(Arrays.asList(2001));
-         List<Integer> tts = new ArrayList<>(Arrays.asList(3493));
-         //*/
+        //* Coordenadas VEGA SST con RR + 2000 up and down
+        List<Integer> atg = new ArrayList<>(Arrays.asList(2108));
+        List<Integer> gt = new ArrayList<>(Arrays.asList(2246));
+        List<Integer> ag = new ArrayList<>(Arrays.asList(3121));
+        List<Integer> stops = new ArrayList<>(Arrays.asList(3334));
+        List<Integer> tss = new ArrayList<>(Arrays.asList(2001));
+        List<Integer> tts = new ArrayList<>(Arrays.asList(3493));
+        //*/
 
         String archivo_entrada = entrada;
         String archivo_middle = "gen_prueba.pl";  // gen problema que se usa para la clase Middle
-        String rutaGen = "salidas/gen.txt";     
-        String rutaGenClasificador = "salidas/genCla.txt";     
-        
-        
+        String rutaGen = "salidas/gen.txt";
+        String rutaGenClasificador = "salidas/genCla.txt";
+
         //------------------Archivos-------------------------------------------------------------------
         File genes = new File(archivo_middle);// archivo .pl de entrada a la clase middle
         File gen = new File(rutaGen);
         File genDos = new File(rutaGenClasificador);// archivo gen de entrada para el clasificador
 
         Utilities metaDataGen = new Utilities(archivo_entrada, hebra); // objeto prara procesar metadatos del gen en proceso.
-        
+
         //--------------------Codigo para generar el archivo de entrada al Middle-----------------------
         String secuenciaProceso = metaDataGen.get_Secuencia().get(0);
         String aux = "gen(" + secuenciaProceso + ")."; //se genera gen_prueba        
@@ -285,32 +282,31 @@ public class GenInformation {
         middle.init("p_genes.pl"); //Se inicializa el objeto predictor con el codigo del .pl del predictor.
 
         Analizer analizer = new Analizer();
-        
+
         // Descomentar para trabajar con las listas de arriba
         //analizer.readFromLists(atg, gt, ag, stops, tss, tts, data); 
-        
         // Al salir de este metodo las listas de predicciones hechas desde prolog/clasificador estan disponibles
         // en las listas atg, gt, ... del objeto constructor presente en el objeto analizer.
         analizer.readFromMiddleWare(middle, ilpClasificador, data, rutaGenClasificador, secuencia); // Descomentar para trabajar con prolog.
-        
+
         GeneConstructor constructor = analizer.getConstructor(); // Se podra' acceder a las clasificaciones para construir los ORFs.
 
-            analizer.constructLectures(false); //Se construyen los ORFs (true: metodo recursivo, false: metodo interativo).
+        analizer.constructLectures(false); //Se construyen los ORFs (true: metodo recursivo, false: metodo interativo).
 
         System.out.println("" + analizer.toString()); // Se imprimen en consola todos los intrones y exones hallados.
 
-        if (!analizer.getLectures().isEmpty()) {// Si gay ORFs entonces:
+        if (!analizer.getLectures().isEmpty()) {// Si hay ORFs entonces:
 
             System.out.println("Numero de ORFs: " + analizer.getLectures().size());
 
             if (this.isGT()) { // Si se desea armar trnscritos, entonces se definen posibles UTR5' y UTR3' para cada ORF.
                 analizer.constructRegionUTR5p(metaDataGen, this, iLPinr, consensos); // pasar iLPinr = false implica que se proponen TSSs por consensos INR.
                 analizer.constructRegionUTR3p(metaDataGen, this, iLPinr);
-            }            
-            
+            }
+
             // Se genera el reporte comparativo usando anotaciones desde Ensembl y EPD
             analizer.lectsEnsemblEpd(metaDataGen, gff3EnsemblEPDExt, reporteAbs, this);
-            
+
             // Se genera el reporte comparativo usando anotaciones del predictor
             analizer.lectsToGFF3(metaDataGen, gff3Predictor, reporteAbs, this, numObjs, numIter, red, this.isComplementarios());
 
@@ -354,7 +350,6 @@ public class GenInformation {
         // comentar para desactivar el middleware y trabajar solo con las listas , 
         // ya que este programa se puede trabajar con listas o con  Middle por lo tanto con prolog.
         //*
-
         MiddleWare middle = new MiddleWare(); // este es el objero de clase midddleware que conecta con el predictor
         middle.init("p_genes.pl"); //Se inicializa el objeto predictor con el codigo del predcitor.
         //middle.consultEverything(); //hacen las consultas y se cargan los vectores Patgs, Pgt, Pag, Ppar.
@@ -368,11 +363,9 @@ public class GenInformation {
         // en las listas atg, gt, ... del objeto constructor presente en el objeto analizer.
         // Descomentar para trabajar con prolog.*/
 
-
         GeneConstructor constructor = analizer.getConstructor();
         //constructor.setAtg(new ArrayList<Integer>());
         //constructor.setStops(new ArrayList<Integer>());
-
 
         //analizer.readFromLists(atg, gt, ag, stops, data); // Descomentar para trabajar con listas
         analizer.constructLectures(false); //Se construyen las lecturas (true metodo recursivo, false interactivo).
@@ -380,8 +373,6 @@ public class GenInformation {
 
         //analizer.filtrar();
         //analizer.lectsToString();
-
-
         return analizer;
 
     }

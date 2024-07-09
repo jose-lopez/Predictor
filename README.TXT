@@ -18,8 +18,8 @@ Argumentos: 3 3 1 198295559 false true true 0 0 false MAPK-ERK true true false f
 
 args[0]: gffVersion (Versión del estándar GFF para generar los reportes de estructuras)(tipo entero)
 args[1]: regionID   (Identificador del cromosoma desde donde son tomadas las secuencias que son procesadas)(tipo entero)
-args[2]: regionInicio (Coordenada de inicio en la regionID en proceso)(tipo entero)
-args[3]: regionFin    (Coordenada de inicio en la regionID en proceso)(tipo entero)
+args[2]: regionInicio (Coordenada del inicio en la regionID en proceso)(tipo entero)
+args[3]: regionFin    (Coordenada del fin en la regionID en proceso)(tipo entero)
 args[4]: ilpinr	      (Se define si los sitios de inicio de trascrito se definen mediante uso de ILP o consenso INR)(true|false)
 args[5]: consensos    (Establece si los core promoter se definen mediante consensos o factores de transcripción)(true|false)
 args[6]: reporteAbs   (Se define si los reportes de estructuras se harán absolutos respecto de las coordenadas de Ensembl)(true|false)
