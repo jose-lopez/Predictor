@@ -113,8 +113,15 @@ public class GeneConstructor {
      * objeto de la clase Middle ya instanciado y probado, de donde solo se
      * obtendran los valores que este devuelve como entrada para generar las
      * listas internas
+     *
+     * @param middleWare Objeto MiddleWare para acceder a predictores
+     * @param ilpClasificador true para usar predictor ILP/Prolog
+     * @param useAutoML true para usar AutoML (FastAPI), false para usar Weka
+     * @param data Datos del gen
+     * @param rutaSecuencia Ruta a la secuencia (solo necesaria para Weka)
+     * @param secuencia Secuencia nucleotídica completa
      */
-    public GeneConstructor(MiddleWare middleWare, boolean ilpClasificador, List<String> data, String rutaSecuencia, String secuencia) throws Exception {
+    public GeneConstructor(MiddleWare middleWare, boolean ilpClasificador, boolean useAutoML, List<String> data, String rutaSecuencia, String secuencia) throws Exception {
 
         if (ilpClasificador) {
             /*this.initLists(middleWare.getAtgPositions(),
@@ -122,8 +129,49 @@ public class GeneConstructor {
                     middleWare.getAgPositions(),
                     middleWare.getParadasPositions(),
                     middleWare.getGenData());*/
+        } else if (useAutoML) {
+            // Modo AutoML - Una sola llamada HTTP para todas las predicciones
+            System.out.println("Usando AutoML para predicción de sitios genómicos...");
+
+            // 1. Obtener todas las predicciones con una sola llamada
+            clasificador.AutoMLClasificador.AutoMLResult automlResult = middleWare.predictAutoML(secuencia);
+
+            // 2. Extraer las listas de posiciones
+            List<Integer> gts = automlResult.getEiPositions();  // GT (Exon→Intron)
+            List<Integer> ags = automlResult.getIePositions();  // AG (Intron→Exon)
+            List<Integer> zes = automlResult.getZePositions();  // ZE (Zona→Exon)
+            List<Integer> ezs = automlResult.getEzPositions();  // EZ (Exon→Zona)
+
+            // 3. ATG y STOP se obtienen por patrón
+            List<Integer> atgs = middleWare.getPositionsPatron(secuencia, true);
+            List<Integer> stopss = middleWare.getPositionsPatron(secuencia, false);
+
+            // 4. Imprimir estadísticas
+            System.out.println("AutoML - Sitios encontrados:");
+            System.out.println("  GT: " + gts.size() + " sitios");
+            System.out.println("  AG: " + ags.size() + " sitios");
+            System.out.println("  ZE: " + zes.size() + " sitios");
+            System.out.println("  EZ: " + ezs.size() + " sitios");
+            System.out.println("  ATG: " + atgs.size() + " sitios");
+            System.out.println("  STOP: " + stopss.size() + " sitios");
+
+            // 5. AutoML no devuelve distancias/probabilidades, usar valores por defecto
+            distPosGt = new ArrayList<>();
+            distPosAg = new ArrayList<>();
+            distPosTss = new ArrayList<>();
+            distPosTts = new ArrayList<>();
+
+            for (int i = 0; i < gts.size(); i++) distPosGt.add(1.0);
+            for (int i = 0; i < ags.size(); i++) distPosAg.add(1.0);
+            for (int i = 0; i < zes.size(); i++) distPosTss.add(1.0);
+            for (int i = 0; i < ezs.size(); i++) distPosTts.add(1.0);
+
+            // 6. Inicializar las listas internas
+            // AutoML no requiere getGenData() de Prolog, usar data directamente
+            this.initLists(atgs, gts, ags, stopss, zes, ezs, data);
+
         } else {
-            
+            // Modo Weka - Cuatro llamadas separadas
             prediccionesGt = middleWare.getGtPositionsClasificador(0, 1, rutaSecuencia, 5, 5, 0.85, false);
             prediccionesAg = middleWare.getAGPositionsClasificador(1, 1, rutaSecuencia, 5, 5, 0.75, false);
             prediccionesTss = middleWare.getTSSPositionsClasificador(3, 1, rutaSecuencia, 500, 50, 0.9999404840371321, false);
@@ -132,13 +180,13 @@ public class GeneConstructor {
             List<Integer> stopss = middleWare.getPositionsPatron(secuencia, false);
             List<Integer> gts = (List<Integer>)prediccionesGt.get(0);
             distPosGt = (ArrayList<Double>)prediccionesGt.get(1);
-            List<Integer> ags = (List<Integer>)prediccionesAg.get(0);            
+            List<Integer> ags = (List<Integer>)prediccionesAg.get(0);
             distPosAg = (ArrayList<Double>)prediccionesAg.get(1);
             List<Integer> tss = (List<Integer>)prediccionesTss.get(0);
             distPosTss = (ArrayList<Double>)prediccionesTss.get(1);
             List<Integer> tts = (List<Integer>)prediccionesTts.get(0);
             distPosTts = (ArrayList<Double>)prediccionesTts.get(1);
-            
+
             this.initLists(atgs, gts, ags, stopss, tss, tts, middleWare.getGenData());
         }
 

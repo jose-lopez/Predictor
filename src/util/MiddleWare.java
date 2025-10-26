@@ -24,6 +24,7 @@
 package util;
 
 import clasificador.Clasificador;
+import clasificador.AutoMLClasificador;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -817,6 +818,31 @@ public class MiddleWare {
         }
 
         return new ArrayList<>();
+    }
+
+    //---------------------------------------
+    // Método para clasificador AutoML
+    //---------------------------------------
+
+    /**
+     * Realiza una predicción de las zonas de transición genómica usando AutoML.
+     *
+     * Este método hace exactamente lo mismo que el curl:
+     * curl -X POST "http://127.0.0.1:8000/predict" -d '{"sequence":"..."}'
+     *
+     * @param secuencia Secuencia nucleotídica completa (ATGC)
+     * @return AutoMLResult con las predicciones de todas las zonas
+     * @throws Exception Si hay error en la comunicación con el servicio AutoML
+     */
+    public AutoMLClasificador.AutoMLResult predictAutoML(String secuencia) throws Exception {
+
+        AutoMLClasificador automl = new AutoMLClasificador();
+
+        AutoMLClasificador.AutoMLResult result = automl.predict(secuencia);
+
+        System.out.println("AutoML predicción completada: " + result.toString());
+
+        return result;
     }
 
     /**
