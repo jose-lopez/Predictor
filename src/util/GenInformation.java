@@ -284,10 +284,14 @@ public class GenInformation {
         Analizer analizer = new Analizer();
 
         // Descomentar para trabajar con las listas de arriba
-        //analizer.readFromLists(atg, gt, ag, stops, tss, tts, data); 
+        //analizer.readFromLists(atg, gt, ag, stops, tss, tts, data);
         // Al salir de este metodo las listas de predicciones hechas desde prolog/clasificador estan disponibles
         // en las listas atg, gt, ... del objeto constructor presente en el objeto analizer.
-        analizer.readFromMiddleWare(middle, ilpClasificador, data, rutaGenClasificador, secuencia); // Descomentar para trabajar con prolog.
+
+        // Configurar si se usa AutoML o Weka
+        boolean useAutoML = true;  // Cambiar a false para usar Weka
+
+        analizer.readFromMiddleWare(middle, ilpClasificador, useAutoML, data, rutaGenClasificador, secuencia); // Descomentar para trabajar con prolog.
 
         GeneConstructor constructor = analizer.getConstructor(); // Se podra' acceder a las clasificaciones para construir los ORFs.
 
@@ -357,7 +361,7 @@ public class GenInformation {
 
         Analizer analizer = new Analizer();
 
-        analizer.readFromMiddleWare(middle, true, utr5, aux, aux); // Se instancia el objeto constructor de lecturas
+        analizer.readFromMiddleWare(middle, true, false, utr5, aux, aux); // Se instancia el objeto constructor de lecturas (ILP mode, no AutoML)
         // empleando las predicciones desde Prolog que estan disponibles en el objeto middle. 
         // Al salir de este metodo las listas de predicciones hechas desde prolog estan disponibles
         // en las listas atg, gt, ... del objeto constructor presente en el objeto analizer.

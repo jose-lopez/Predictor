@@ -90,9 +90,16 @@ public class Analizer {
     /**
      * Metodo usado para instanciar el GeneConstructor a traves del constructor
      * que recibe por parametros el Middle
+     *
+     * @param middleWare Objeto MiddleWare
+     * @param ilpClasificador true para usar ILP, false para usar clasificadores
+     * @param useAutoML true para usar AutoML, false para usar Weka
+     * @param data Datos del gen
+     * @param rutaSecuencia Ruta a la secuencia
+     * @param secuencia Secuencia nucleotídica
      */
-    public void readFromMiddleWare(MiddleWare middleWare, boolean ilpClasificador, List<String> data, String rutaSecuencia, String secuencia) throws Exception {
-        this.constructor = new GeneConstructor(middleWare, ilpClasificador, data, rutaSecuencia, secuencia);
+    public void readFromMiddleWare(MiddleWare middleWare, boolean ilpClasificador, boolean useAutoML, List<String> data, String rutaSecuencia, String secuencia) throws Exception {
+        this.constructor = new GeneConstructor(middleWare, ilpClasificador, useAutoML, data, rutaSecuencia, secuencia);
     }
 
     //---------------------------------------
